@@ -1,0 +1,30 @@
+## Letters: A mod for Minetest!
+
+The majority of this code was taken (and altered significantly) from Calinou's [Moreblocks mod](https://forum.minetest.net/viewtopic.php?t=509). It is designed to add letters in all different materials. Code is licensed under the zlib license, textures under the CC BY license.
+
+###Adding nodes to the letters:
+
+Use this code to allow blocks to have letters registered from them:
+```lua
+letters.register_letters(modname, subname, from_node, description, tiles)
+```
+Modname is the mod that the node belongs to.
+Subname is the actual name of the node.
+From_nobe is the node that the letters will be crafted from (Usually modname:subname).
+Description is the description of the node.
+Tiles defines the image that will be used with the node.
+
+For example, if I wanted to register marble, from the mod darkage, this is the code I would use:
+```lua
+letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
+```
+You will need to add letters as a dependency to your mod, or include the registrations is the code:
+```lua
+if minetest.get_modpath("letters") then
+	letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
+	--ect ect...
+end
+```
+
+###WARNING!!!
+**This mod is *highly* unstable, and *very* likely to change. Use at your own risk!**
