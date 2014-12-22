@@ -35,7 +35,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 		local name = subname.. "_letter_" ..row[1]
 		local desc = description.. " " ..row[1]
 		local tiles = tiles.. "^letters_" ..row[2].. "_overlay.png^[makealpha:255,126,126"
-		local groups = {not_in_creative_inventory=1, not_in_craft_guide=1, oddly_breakable_by_hand=1}
+		local groups = {not_in_creative_inventory=1, not_in_craft_guide=1, oddly_breakable_by_hand=1, attached_node=1}
 		minetest.register_node(":" ..modname..":"..name, {
 			description = desc,
 			drawtype = "signlike",
@@ -68,13 +68,6 @@ function letters.register_letters(modname, subname, from_node, description, tile
 	letter_cutter.known_nodes[from_node] = {modname, subname}
 end
 
---[[How many microblocks does this shape at the output inventory cost:
-letter_cutter.cost_in_microblocks = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-}]]
 cost = 0.110
 
 letter_cutter.names = {
@@ -106,18 +99,9 @@ letter_cutter.names = {
 	{"letter_z"},
 }
 
---[[function letter_cutter:get_cost(inv, stackname)
-	for i, item in pairs(inv:get_list("output")) do
-		if item:get_name() == stackname then
-			return letter_cutter.cost_in_microblocks[i]
-		end
-	end
-end]]
-
 function letter_cutter:get_output_inv(modname, subname, amount, max)
 
 	local list = {}
-	-- If there is nothing inside, display empty inventory:
 	if amount < 1 then
 		return list
 	end
@@ -129,10 +113,6 @@ function letter_cutter:get_output_inv(modname, subname, amount, max)
 	return list
 end
 
-
--- Reset empty letter_cutter after last full block has been taken out
--- (or the letter_cutter has been placed the first time)
--- Note: max_offered is not reset:
 function letter_cutter:reset(pos)
 	local meta = minetest.get_meta(pos)
 	local inv  = meta:get_inventory()
@@ -152,18 +132,13 @@ function letter_cutter:update_inventory(pos, amount)
 
 	amount = meta:get_int("anz") + amount
 
-	-- The material is recycled automaticly.
-
 	if amount < 1 then -- If the last block is taken out.
 		self:reset(pos)
 		return
 	end
  
 	local stack = inv:get_stack("input",  1)
-	-- At least one "normal" block is necessary to see what kind of stairs are requested.
 	if stack:is_empty() then
-		-- Any microblocks not taken out yet are now lost.
-		-- (covers material loss in the machine)
 		self:reset(pos)
 		return
 
@@ -173,16 +148,9 @@ function letter_cutter:update_inventory(pos, amount)
 	local modname  = name_parts[1] or ""
 	local material = name_parts[2] or ""
 
-	inv:set_list("input", { -- Display as many full blocks as possible:
+	inv:set_list("input", { 
 		node_name.. " " .. math.floor(amount)
 	})
-
-	-- The stairnodes made of default nodes use moreblocks namespace, other mods keep own:
---	if modname == "default" then
-	--	modname = "moreblocks"
-	--end
-	-- print("letter_cutter set to " .. modname .. " : "
-	--	.. material .. " with " .. (amount) .. " microblocks.")
 
 	-- Display:
 	inv:set_list("output",
@@ -197,7 +165,7 @@ function letter_cutter:update_inventory(pos, amount)
 end
 
 
--- The amount of items offered per shape can be configured:
+--[[ The amount of items offered per shape can be configured:
 function letter_cutter.on_receive_fields(pos, formname, fields, sender)
 	local meta = minetest.get_meta(pos)
 	local max = tonumber(fields.max_offered)
@@ -206,12 +174,9 @@ function letter_cutter.on_receive_fields(pos, formname, fields, sender)
 		-- Update to show the correct number of items:
 		letter_cutter:update_inventory(pos, 0)
 	end
-end
+end]]
 
 
--- Moving the inventory of the letter_cutter around is not allowed because it
--- is a fictional inventory. Moving inventory around would be rather
--- impractical and make things more difficult to calculate:
 function letter_cutter.allow_metadata_inventory_move(
 		pos, from_list, from_index, to_list, to_index, count, player)
 	return 0
@@ -246,30 +211,20 @@ function letter_cutter.allow_metadata_inventory_put(
 	end
 end
 
--- Taking is allowed from all slots (even the internal microblock slot).
--- Putting something in is slightly more complicated than taking anything
--- because we have to make sure it is of a suitable material:
 function letter_cutter.on_metadata_inventory_put(
 		pos, listname, index, stack, player)
-	-- We need to find out if the letter_cutter is already set to a
-	-- specific material or not:
 	local meta = minetest.get_meta(pos)
 	local inv  = meta:get_inventory()
 	local stackname = stack:get_name()
 	local count = stack:get_count()
 
-	-- Putting something into the input slot is only possible if that had
-	-- been empty before or did contain something of the same material:
 	if listname == "input" then
-		-- Each new block is worth 8 microblocks:
 		letter_cutter:update_inventory(pos, count)
 	end
 end
 
 function letter_cutter.on_metadata_inventory_take(
 		pos, listname, index, stack, player)
-	-- If it is one of the offered stairs: find out how many
-	-- microblocks have to be substracted:
 	if listname == "output" then
 		-- We do know how much each block at each position costs:
 		letter_cutter:update_inventory(pos, 8 * -cost)
@@ -308,7 +263,6 @@ function letter_cutter.can_dig(pos,player)
 	if not inv:is_empty("input") then
 		return false
 	end
-	-- Can be dug by anyone when empty, not only by the owner:
 	return true
 end
 
@@ -350,9 +304,6 @@ minetest.register_node("letters:letter_cutter",  {
 				"Letter Cutter is empty (owned by "
 					..meta:get_string("owner")..")")
 	end,
-
-	-- The amount of items offered per shape can be configured:
-	on_receive_fields = letter_cutter.on_receive_fields,
 	allow_metadata_inventory_move = letter_cutter.allow_metadata_inventory_move,
 	-- Only input- and recycle-slot are intended as input slots:
 	allow_metadata_inventory_put = letter_cutter.allow_metadata_inventory_put,

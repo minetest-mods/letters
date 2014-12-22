@@ -15,4 +15,5 @@ if minetest.get_modpath("darkage") then
 	letters.register_letters("darkage", "straw_bale", "darkage:straw_bale", "Straw Bale", "darkage_straw_bale.png")
 	letters.register_letters("darkage", "stone_brick", "darkage:stone_brick", "Stone Brick", "darkage_stone_brick.png")
 	letters.register_letters("darkage", "marble_tile", "darkage:marble_tile", "Marble Tile", "darkage_marble_tile.png")
+	letters.register_letters("darkage", "slate_tile", "darkage:slate_tile", "Slate Tile", "darkage_slate_tile.png")
 end
