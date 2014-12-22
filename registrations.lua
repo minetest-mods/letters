@@ -1,0 +1,18 @@
+if minetest.get_modpath("darkage") then
+	letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
+	letters.register_letters("darkage", "basalt", "darkage:basalt", "Basalt", "darkage_basalt.png")
+	letters.register_letters("darkage", "serpentine", "darkage:serpentine", "Serpentine", "darkage_serpentine.png")
+	letters.register_letters("darkage", "ors", "darkage:ors", "Old Red Sandstone", "darkage_ors.png")
+	letters.register_letters("darkage", "schist", "darkage:schist", "Schist", "darkage_schist.png")
+	letters.register_letters("darkage", "slate", "darkage:slate", "Slate", "darkage_slate.png")
+	letters.register_letters("darkage", "gneiss", "darkage:gneiss", "Gneiss", "darkage_gneiss.png")
+	letters.register_letters("darkage", "chalk", "darkage:chalk", "Chalk", "darkage_chalk.png")
+	letters.register_letters("darkage", "ors_cobble", "darkage:ors_cobble", "Old Red Sandstone Cobble", "darkage_ors_brick.png")	
+	letters.register_letters("darkage", "slate_cobble", "darkage:slate_cobble", "Slate Cobble", "darkage_slate_brick.png")
+	letters.register_letters("darkage", "gneiss_cobble", "darkage:gneiss_cobble", "Gneiss Cobble", "darkage_gneiss_brick.png")
+	letters.register_letters("darkage", "basalt_cobble", "darkage:basalt_cobble", "Basalt Cobble", "darkage_basalt_brick.png")
+	letters.register_letters("darkage", "straw", "darkage:straw", "Straw", "darkage_straw.png")
+	letters.register_letters("darkage", "straw_bale", "darkage:straw_bale", "Straw Bale", "darkage_straw_bale.png")
+	letters.register_letters("darkage", "stone_brick", "darkage:stone_brick", "Stone Brick", "darkage_stone_brick.png")
+	letters.register_letters("darkage", "marble_tile", "darkage:marble_tile", "Marble Tile", "darkage_marble_tile.png")
+end

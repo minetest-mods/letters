@@ -4,7 +4,7 @@ The majority of this code was taken (and altered significantly) from Calinou's [
 
 The Letter Cutter textures use parts of the default wood and tree textures made by Blockmen and Cisoun respectively.
 
-###Allowing letters to be made from nodes:
+####Allowing letters to be made from nodes:
 
 Use this code to allow blocks to have letters registered from them:
 ```lua
@@ -28,7 +28,6 @@ if minetest.get_modpath("letters") then
 end
 ```
 
-Most of the default nodes have already been registered.
+Most of the default nodes have already been registered, and I have added/will add mods I like, as an optional dependancy.
 
-###WARNING!!!
-**This mod is *highly* unstable, and *very* likely to change. Use at your own risk!**
+*This mod is fairly stable, and shouldn't crash, but be warned that it is in its early stages of development, and so things may change considerably*

@@ -68,8 +68,6 @@ function letters.register_letters(modname, subname, from_node, description, tile
 	letter_cutter.known_nodes[from_node] = {modname, subname}
 end
 
-letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
-
 --[[How many microblocks does this shape at the output inventory cost:
 letter_cutter.cost_in_microblocks = {
 	1, 1, 1, 1, 1, 1, 1, 1,
@@ -399,3 +397,4 @@ for _, row in pairs(default_nodes) do
 	letters.register_letters("default", row[1], nodename, ndef.description, texture) 
 end
 
+dofile(minetest.get_modpath("letters").."/registrations.lua")
