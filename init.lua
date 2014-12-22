@@ -35,6 +35,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 		local name = subname.. "_letter_" ..row[1]
 		local desc = description.. " " ..row[1]
 		local tiles = tiles.. "^letters_" ..row[2].. "_overlay.png^[makealpha:255,126,126"
+		local groups = {not_in_creative_inventory=1, not_in_craft_guide=1, oddly_breakable_by_hand=1}
 		minetest.register_node(":" ..modname..":"..name, {
 			description = desc,
 			drawtype = "signlike",
@@ -52,7 +53,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 				--wall_bottom = <default>
 				--wall_side = <default>
 			},
-			groups = {not_in_creative_inventory=1, not_in_craft_guide=1, oddly_breakable_by_hand=1},
+			groups = groups,
 			legacy_wallmounted = false,
 		})
 		minetest.register_craft({
@@ -319,19 +320,22 @@ minetest.register_node("letters:letter_cutter",  {
 	node_box = {
 		type = "fixed", 
 		fixed = {
-			{-0.4, -0.5, -0.4, -0.25, 0.25, -0.25}, -- Leg
-			{0.25, -0.5, 0.25, 0.4, 0.25, 0.4}, -- Leg
-			{-0.4, -0.5, 0.25, -0.25, 0.25, 0.4}, -- Leg 
-			{0.25, -0.5, -0.4, 0.4, 0.25, -0.25}, -- Leg
-			{-0.5, 0.25, -0.5, 0.5, 0.375, 0.5}, -- Tabletop
-			{-0.01, 0.4375, -0.125, 0.01, 0.5, 0.125}, -- Saw blade (top)
-			{-0.01, 0.375, -0.1875, 0.01, 0.4375, 0.1875}, -- Saw blade (bottom)
-			{-0.25, -0.0625, -0.25, 0.25, 0.25, 0.25}, -- Motor case
+			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125}, -- NodeBox1
+			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375}, -- NodeBox2
+			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375}, -- NodeBox3
+			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125}, -- NodeBox4
+			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5}, -- NodeBox5
+			{0.125, 0.25, -0.1875, 0.3125, 0.3125, -0.125}, -- NodeBox6
+			{-0.125, 0.25, -0.125, 0.125, 0.3125, -0.0625}, -- NodeBox7
+			{-0.3125, 0.25, -0.0625, -0.0625, 0.3125, 0.0625}, -- NodeBox8
+			{-0.125, 0.25, 0.0625, 0.125, 0.3125, 0.125}, -- NodeBox9
+			{0.125, 0.25, 0.125, 0.3125, 0.3125, 0.1875}, -- NodeBox10
+			{0.125, 0.25, -0.125, 0.1875, 0.3125, 0.125}, -- NodeBox11
 		},
 	},
-	tiles = {"moreblocks_circular_saw_top.png",
-		"moreblocks_circular_saw_bottom.png",
-		"moreblocks_circular_saw_side.png"},
+	tiles = {"letters_letter_cutter_top.png",
+		"default_tree.png",
+		"letters_letter_cutter_side.png"},
 	paramtype = "light", 
 	sunlight_propagates = true,
 	paramtype2 = "facedir", 

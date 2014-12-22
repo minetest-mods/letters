@@ -1,8 +1,10 @@
 ## Letters: A mod for Minetest!
 
-The majority of this code was taken (and altered significantly) from Calinou's [Moreblocks mod](https://forum.minetest.net/viewtopic.php?t=509). It is designed to add letters in all different materials. Code is licensed under the zlib license, textures under the CC BY license.
+The majority of this code was taken (and altered significantly) from Calinou's [Moreblocks mod](https://forum.minetest.net/viewtopic.php?t=509). It is designed to add letters in all different materials. Code is licensed under the zlib license, textures under the CC BY-SA license.
 
-###Adding nodes to the letters:
+The Letter Cutter textures use parts of the default wood and tree textures made by Blockmen and Cisoun respectively.
+
+###Allowing letters to be made from nodes:
 
 Use this code to allow blocks to have letters registered from them:
 ```lua
@@ -25,6 +27,8 @@ if minetest.get_modpath("letters") then
 	--ect ect...
 end
 ```
+
+Most of the default nodes have already been registered.
 
 ###WARNING!!!
 **This mod is *highly* unstable, and *very* likely to change. Use at your own risk!**
