@@ -179,7 +179,7 @@ function letter_cutter:get_output_inv_upper(modname, subname, amount, max)
 	return list
 end
 
-function letter_cutter:reset(pos)
+function letter_cutter:reset_lower(pos)
 	local meta = minetest.get_meta(pos)
 	local inv  = meta:get_inventory()
 
@@ -188,7 +188,20 @@ function letter_cutter:reset(pos)
 	meta:set_int("anz", 0)
 
 	meta:set_string("infotext",
-			"Letter Cutter is empty (owned by "..
+			"Letter Cutter (Lower) is empty (owned by "..
+				meta:get_string("owner")..")")
+end
+
+function letter_cutter:reset_upper(pos)
+	local meta = minetest.get_meta(pos)
+	local inv  = meta:get_inventory()
+
+	inv:set_list("input",  {})
+	inv:set_list("output", {})
+	meta:set_int("anz", 0)
+
+	meta:set_string("infotext",
+			"Letter Cutter (Upper) is empty (owned by "..
 				meta:get_string("owner")..")")
 end
 
@@ -199,13 +212,13 @@ function letter_cutter:update_inventory_lower(pos, amount)
 	amount = meta:get_int("anz") + amount
 
 	if amount < 1 then -- If the last block is taken out.
-		self:reset(pos)
+		self:reset_lower(pos)
 		return
 	end
  
 	local stack = inv:get_stack("input",  1)
 	if stack:is_empty() then
-		self:reset(pos)
+		self:reset_lower(pos)
 		return
 
 	end
@@ -226,7 +239,7 @@ function letter_cutter:update_inventory_lower(pos, amount)
 	meta:set_int("anz", amount)
 
 	meta:set_string("infotext",
-			"Letter Cutter is working (owned by "..
+			"Letter Cutter (Lower) is working (owned by "..
 				meta:get_string("owner")..")")
 end
 
@@ -237,13 +250,13 @@ function letter_cutter:update_inventory_upper(pos, amount)
 	amount = meta:get_int("anz") + amount
 
 	if amount < 1 then -- If the last block is taken out.
-		self:reset(pos)
+		self:reset_upper(pos)
 		return
 	end
  
 	local stack = inv:get_stack("input",  1)
 	if stack:is_empty() then
-		self:reset(pos)
+		self:reset_upper(pos)
 		return
 
 	end
@@ -264,7 +277,7 @@ function letter_cutter:update_inventory_upper(pos, amount)
 	meta:set_int("anz", amount)
 
 	meta:set_string("infotext",
-			"Letter Cutter is working (owned by "..
+			"Letter Cutter (Upper) is working (owned by "..
 				meta:get_string("owner")..")")
 end
 
@@ -353,7 +366,7 @@ end
 
 gui_slots = "listcolors[#606060AA;#808080;#101010;#202020;#FFF]"
 
-function letter_cutter.on_construct(pos)
+function letter_cutter.on_construct_lower(pos)
 	local meta = minetest.get_meta(pos)
 	meta:set_string("formspec", "size[11,9]" ..gui_slots..
 			"label[0,0;Input\nmaterial]" ..
@@ -363,13 +376,32 @@ function letter_cutter.on_construct(pos)
 
 	meta:set_int("anz", 0) -- No microblocks inside yet.
 	meta:set_string("max_offered", 9) -- How many items of this kind are offered by default?
-	meta:set_string("infotext", "Letter Cutter is empty")
+	meta:set_string("infotext", "Letter Cutter (Lower) is empty")
 
 	local inv = meta:get_inventory()
 	inv:set_size("input", 1)    -- Input slot for full blocks of material x.
 	inv:set_size("output", 4*8) -- 4x8 versions of stair-parts of material x.
 
-	letter_cutter:reset(pos)
+	letter_cutter:reset_lower(pos)
+end
+
+function letter_cutter.on_construct_upper(pos)
+	local meta = minetest.get_meta(pos)
+	meta:set_string("formspec", "size[11,9]" ..gui_slots..
+			"label[0,0;Input\nmaterial]" ..
+			"list[current_name;input;1.5,0;1,1;]" ..
+			"list[current_name;output;2.8,0;8,4;]" ..
+			"list[current_player;main;1.5,5;8,4;]")
+
+	meta:set_int("anz", 0) -- No microblocks inside yet.
+	meta:set_string("max_offered", 9) -- How many items of this kind are offered by default?
+	meta:set_string("infotext", "Letter Cutter (Upper) is empty")
+
+	local inv = meta:get_inventory()
+	inv:set_size("input", 1)    -- Input slot for full blocks of material x.
+	inv:set_size("output", 4*8) -- 4x8 versions of stair-parts of material x.
+
+	letter_cutter:reset_upper(pos)
 end
 
 
@@ -393,15 +425,18 @@ minetest.register_node("letters:letter_cutter_lower",  {
 			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375}, -- NodeBox3
 			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125}, -- NodeBox4
 			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5}, -- NodeBox5
-			{0.125, 0.25, -0.1875, 0.3125, 0.3125, -0.125}, -- NodeBox6
-			{-0.125, 0.25, -0.125, 0.125, 0.3125, -0.0625}, -- NodeBox7
-			{-0.3125, 0.25, -0.0625, -0.0625, 0.3125, 0.0625}, -- NodeBox8
-			{-0.125, 0.25, 0.0625, 0.125, 0.3125, 0.125}, -- NodeBox9
-			{0.125, 0.25, 0.125, 0.3125, 0.3125, 0.1875}, -- NodeBox10
-			{0.125, 0.25, -0.125, 0.1875, 0.3125, 0.125}, -- NodeBox11
+				{-0.125, 0.25, 0.125, 0.125, 0.3125, 0.1875}, -- NodeBox6
+			{0.125, 0.25, 0.0625, 0.1875, 0.3125, 0.125}, -- NodeBox7
+			{0.1875, 0.25, -0.1875, 0.25, 0.3125, 0.1875}, -- NodeBox8
+			{-0.1875, 0.25, 0.0625, -0.125, 0.3125, 0.125}, -- NodeBox9
+			{-0.25, 0.25, -0.1875, -0.1875, 0.3125, 0.0625}, -- NodeBox10
+			{-0.1875, 0.25, -0.25, -0.125, 0.3125, -0.1875}, -- NodeBox11
+			{-0.125, 0.25, -0.3125, 0.125, 0.3125, -0.25}, -- NodeBox12
+			{0.125, 0.25, -0.25, 0.375, 0.3125, -0.1875}, -- NodeBox13
+			{0.3125, 0.25, -0.1875, 0.375, 0.3125, -0.125}, -- NodeBox14
 		},
 	},
-	tiles = {"letters_letter_cutter_top.png",
+	tiles = {"letters_letter_cutter_lower_top.png",
 		"default_tree.png",
 		"letters_letter_cutter_side.png"},
 	paramtype = "light", 
@@ -409,7 +444,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	paramtype2 = "facedir", 
 	groups = {choppy = 2,oddly_breakable_by_hand = 2},
 	sounds = default.node_sound_wood_defaults(),
-	on_construct = letter_cutter.on_construct,
+	on_construct = letter_cutter.on_construct_lower,
 	can_dig = letter_cutter.can_dig,
 	-- Set the owner of this circular saw.
 	after_place_node = function(pos, placer)
@@ -417,7 +452,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 		local owner = placer and placer:get_player_name() or ""
 		meta:set_string("owner",  owner)
 		meta:set_string("infotext",
-				"Letter Cutter is empty (owned by "
+				"Letter Cutter (Lower) is empty (owned by "
 					..meta:get_string("owner")..")")
 	end,
 	allow_metadata_inventory_move = letter_cutter.allow_metadata_inventory_move,
@@ -440,15 +475,15 @@ minetest.register_node("letters:letter_cutter_upper",  {
 			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375}, -- NodeBox3
 			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125}, -- NodeBox4
 			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5}, -- NodeBox5
-			{0.125, 0.25, -0.1875, 0.3125, 0.3125, -0.125}, -- NodeBox6
-			{-0.125, 0.25, -0.125, 0.125, 0.3125, -0.0625}, -- NodeBox7
-			{-0.3125, 0.25, -0.0625, -0.0625, 0.3125, 0.0625}, -- NodeBox8
-			{-0.125, 0.25, 0.0625, 0.125, 0.3125, 0.125}, -- NodeBox9
-			{0.125, 0.25, 0.125, 0.3125, 0.3125, 0.1875}, -- NodeBox10
-			{0.125, 0.25, -0.125, 0.1875, 0.3125, 0.125}, -- NodeBox11
+			{0.1875, 0.25, -0.125, 0.125, 0.3125, -0.3125}, -- NodeBox6
+			{0.125, 0.25, 0.125, 0.0625, 0.3125, -0.125}, -- NodeBox7
+			{0.0625, 0.25, 0.3125, -0.0625, 0.3125, 0.0625}, -- NodeBox8
+			{-0.0625, 0.25, 0.125, -0.125, 0.3125, -0.125}, -- NodeBox9
+			{-0.125, 0.25, -0.125, -0.1875, 0.3125, -0.3125}, -- NodeBox10
+			{0.125, 0.25, -0.125, -0.125, 0.3125, -0.1875}, -- NodeBox11
 		},
 	},
-	tiles = {"letters_letter_cutter_top.png",
+	tiles = {"letters_letter_cutter_upper_top.png",
 		"default_tree.png",
 		"letters_letter_cutter_side.png"},
 	paramtype = "light", 
@@ -456,7 +491,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	paramtype2 = "facedir", 
 	groups = {choppy = 2,oddly_breakable_by_hand = 2},
 	sounds = default.node_sound_wood_defaults(),
-	on_construct = letter_cutter.on_construct,
+	on_construct = letter_cutter.on_construct_upper,
 	can_dig = letter_cutter.can_dig,
 	-- Set the owner of this circular saw.
 	after_place_node = function(pos, placer)
@@ -464,7 +499,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 		local owner = placer and placer:get_player_name() or ""
 		meta:set_string("owner",  owner)
 		meta:set_string("infotext",
-				"Letter Cutter is empty (owned by "
+				"Letter Cutter (Upper) is empty (owned by "
 					..meta:get_string("owner")..")")
 	end,
 	allow_metadata_inventory_move = letter_cutter.allow_metadata_inventory_move,
