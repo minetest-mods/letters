@@ -56,14 +56,14 @@ function letters.register_letters(modname, subname, from_node, description, tile
 			groups = groups,
 			legacy_wallmounted = false,
 		})
-		minetest.register_craft({
+		--[[minetest.register_craft({
 			output = from_node,
 			recipe = {
 				{modname..":"..name, modname..":"..name, modname..":"..name},
 				{modname..":"..name, modname..":"..name, modname..":"..name},
 				{modname..":"..name, modname..":"..name, modname..":"..name},
 			},
-		})				
+		})--]]				
 	end
 	letter_cutter.known_nodes[from_node] = {modname, subname}
 end
