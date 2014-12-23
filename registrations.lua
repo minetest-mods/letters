@@ -17,3 +17,20 @@ if minetest.get_modpath("darkage") then
 	letters.register_letters("darkage", "marble_tile", "darkage:marble_tile", "Marble Tile", "darkage_marble_tile.png")
 	letters.register_letters("darkage", "slate_tile", "darkage:slate_tile", "Slate Tile", "darkage_slate_tile.png")
 end
+if minetest.get_modpath("colouredstonebricks") then
+	letters.register_letters("colouredstonebricks", "black", "colouredstonebricks:black", "Black", "colouredstonebricks_black.png")
+	letters.register_letters("colouredstonebricks", "cyan", "colouredstonebricks:cyan", "Cyan", "colouredstonebricks_cyan.png")
+	letters.register_letters("colouredstonebricks", "brown", "colouredstonebricks:brown", "Brown", "colouredstonebricks_brown.png")
+	letters.register_letters("colouredstonebricks", "dark_blue", "colouredstonebricks:dark_blue", "Dark Blue", "colouredstonebricks_dark_blue.png")
+	letters.register_letters("colouredstonebricks", "dark_green", "colouredstonebricks:dark_green", "Dark Green", "colouredstonebricks_dark_green.png")
+	letters.register_letters("colouredstonebricks", "dark_grey", "colouredstonebricks:dark_grey", "Dark Gey", "colouredstonebricks_dark_grey.png")
+	letters.register_letters("colouredstonebricks", "dark_pink", "colouredstonebricks:dark_pink", "Dark Pink", "colouredstonebricks_dark_pink.png")
+	letters.register_letters("colouredstonebricks", "green", "colouredstonebricks:green", "Green", "colouredstonebricks_green.png")
+	letters.register_letters("colouredstonebricks", "grey", "colouredstonebricks:grey", "Grey", "colouredstonebricks_grey.png")
+	letters.register_letters("colouredstonebricks", "orange", "colouredstonebricks:orange", "Orange", "colouredstonebricks_orange.png")
+	letters.register_letters("colouredstonebricks", "pink", "colouredstonebricks:pink", "Pink", "colouredstonebricks_pink.png")
+	letters.register_letters("colouredstonebricks", "purple", "colouredstonebricks:purple", "Purple", "colouredstonebricks_purple.png")
+	letters.register_letters("colouredstonebricks", "red", "colouredstonebricks:red", "Red", "colouredstonebricks_red.png")
+	letters.register_letters("colouredstonebricks", "white", "colouredstonebricks:white", "White", "colouredstonebricks_white.png")
+	letters.register_letters("colouredstonebricks", "yellow", "colouredstonebricks:yellow", "Yellow", "colouredstonebricks_yellow.png")
+end
