@@ -464,6 +464,15 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take_lower,
 })
 
+minetest.register_craft({
+	output = "letters:letter_cutter_lower",
+	recipe = {
+		{"default:tree", "default:tree", "default:tree"},
+		{"default:wood", "default:steel_ingot", "default:wood"},
+		{"default:tree", "", "default:tree"},
+	},
+})
+
 minetest.register_node("letters:letter_cutter_upper",  {
 	description = "Leter Cutter", 
 	drawtype = "nodebox", 
@@ -511,39 +520,13 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take_upper,
 })
 
-
-
-local default_nodes = {
-	{"stone", "stone"},
-	{"cobble", "cobble",},
-	{"mossycobble", "mossycobble"},
-	{"brick", "brick"},
-	{"sandstone", "sandstone" },
-	{"steelblock", "steel_block"},
-	{"goldblock", "gold_block"},
-	{"copperblock", "copper_block"},
-	{"bronzeblock", "bronze_block"},
-	{"diamondblock", "diamond_block"},
-	{"desert_stone", "desert_stone"},
-	{"desert_cobble", "desert_cobble"},
-	{"tree", "tree"},
-	{"wood", "wood"},
-	{"jungletree", "jungletree"},
-	{"junglewood", "junglewood"},
-	{"obsidian", "obsidian"},
-	{"stonebrick", "stone_brick"},
-	{"desert_stonebrick", "desert_stone_brick"},
-	{"sandstonebrick", "sandstone_brick"},
-	{"obsidianbrick", "obsidian_brick"},
-	{"pinetree", "pinetree"},
-	{"pinewood", "pinewood"},
-}
-
-for _, row in pairs(default_nodes) do
-	local nodename = "default:" ..row[1]
-	local ndef = minetest.registered_nodes[nodename]
-	local texture = "default_" ..row[2].. ".png"
-	letters.register_letters("default", row[1], nodename, ndef.description, texture) 
-end
+minetest.register_craft({
+	output = "letters:letter_cutter_upper",
+	recipe = {
+		{"default:tree", "default:tree", "default:tree"},
+		{"default:wood", "default:steel_ingot", "default:wood"},
+		{"default:tree", "default:steel_ingot", "default:tree"},
+	},
+})
 
 dofile(minetest.get_modpath("letters").."/registrations.lua")
