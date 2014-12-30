@@ -415,7 +415,7 @@ function letter_cutter.can_dig(pos,player)
 end
 
 minetest.register_node("letters:letter_cutter_lower",  {
-	description = "Leter Cutter", 
+	description = "Lower Case Leter Cutter", 
 	drawtype = "nodebox", 
 	node_box = {
 		type = "fixed", 
@@ -474,7 +474,7 @@ minetest.register_craft({
 })
 
 minetest.register_node("letters:letter_cutter_upper",  {
-	description = "Leter Cutter", 
+	description = "Uppercase Leter Cutter", 
 	drawtype = "nodebox", 
 	node_box = {
 		type = "fixed", 
