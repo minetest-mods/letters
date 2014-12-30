@@ -474,7 +474,7 @@ minetest.register_craft({
 })
 
 minetest.register_node("letters:letter_cutter_upper",  {
-	description = "Uppercase Leter Cutter", 
+	description = "Upper Case Leter Cutter", 
 	drawtype = "nodebox", 
 	node_box = {
 		type = "fixed", 
