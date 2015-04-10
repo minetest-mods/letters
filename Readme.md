@@ -34,6 +34,6 @@ Most of the default nodes have already been registered, and I have added/will ad
 
 
 **Screenshots!**
-![Screenshot](https://cdn.mediacru.sh/4/4BvHPHl70F9F.png)
-![Another screenshot!](https://cdn.mediacru.sh/t/tuOkRXixvFHY.png)
+![Screenshot](https://imgrush.com/4BvHPHl70F9F.png)
+![Another screenshot!](https://imgrush.com/tuOkRXixvFHY.png)
 
