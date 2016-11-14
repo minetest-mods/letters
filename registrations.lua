@@ -20,8 +20,8 @@ local default_nodes = {
 	{"desert_stonebrick", "desert_stone_brick"},
 	{"sandstonebrick", "sandstone_brick"},
 	{"obsidianbrick", "obsidian_brick"},
-	{"pinetree", "pinetree"},
-	{"pinewood", "pinewood"},
+	{"pine_tree", "pine_tree"},
+	{"pine_wood", "pine_wood"},
 }
 
 for _, row in pairs(default_nodes) do
