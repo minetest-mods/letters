@@ -30,55 +30,42 @@ letters = {
 letter_cutter = {}
 letter_cutter.known_nodes = {}
 
-function letters.register_letters(modname, subname, from_node, description, tiles)
-	for _, row in ipairs(letters) do
-		local namel = subname.. "_letter_" ..row[1]
-		local nameu = subname.. "_letter_" ..row[2]
-		local descl = description.. " " ..row[3]
-		local descu = description.. " " ..row[4]
-		local tilesl = tiles.. "^letters_" ..row[1].. "_overlay.png^[makealpha:255,126,126"
-		local tilesu = tiles.. "^letters_" ..row[2].. "_overlay.png^[makealpha:255,126,126"
-		local groups = {not_in_creative_inventory=1, not_in_craft_guide=1, oddly_breakable_by_hand=1, attached_node=1}
-		minetest.register_node(":" ..modname..":"..namel, {
-			description = descl,
-			drawtype = "signlike",
-			tiles = {tilesl},
-			inventory_image = tilesl,
-			wield_image = tilesl,
-			paramtype = "light",
-			paramtype2 = "wallmounted",
-			sunlight_propagates = true,
-			is_ground_content = false,
-			walkable = false,
-			selection_box = {
-				type = "wallmounted",
-				--wall_top = <default>
-				--wall_bottom = <default>
-				--wall_side = <default>
-			},
-			groups = groups,
-			legacy_wallmounted = false,
-		})
-		minetest.register_node(":" ..modname..":"..nameu, {
-			description = descu,
-			drawtype = "signlike",
-			tiles = {tilesu},
-			inventory_image = tilesu,
-			wield_image = tilesu,
-			paramtype = "light",
-			paramtype2 = "wallmounted",
-			sunlight_propagates = true,
-			is_ground_content = false,
-			walkable = false,
-			selection_box = {
-				type = "wallmounted",
-				--wall_top = <default>
-				--wall_bottom = <default>
-				--wall_side = <default>
-			},
-			groups = groups,
-			legacy_wallmounted = false,
-		})
+function letters.register_letters(modname, subname, from_node, description, tiles, def)
+	--default node
+	def.drawtype = "signlike"
+	def.paramtype = "light"
+	def.paramtype2 = def.paramtype2 or "wallmounted"
+	def.sunlight_propagates = true
+	def.is_ground_content = false
+	def.walkable = false
+	def.selection_box = {
+		type = "wallmounted"
+		--wall_top = <default>
+		--wall_bottom = <default>
+		--wall_side = <default>
+	}
+	def.groups = def.groups or {not_in_creative_inventory=1, not_in_craft_guide=1, oddly_breakable_by_hand=1, attached_node=1}
+	def.legacy_wallmounted = false
+	
+
+	for _, row in ipairs(letters) do	
+	
+		def = table.copy(def)
+		def.description = description.. " " ..row[3]
+		def.inventory_image = tiles.. "^letters_" ..row[1].. "_overlay.png^[makealpha:255,126,126"
+		def.wield_image = def.inventory_image
+		def.tiles = {def.inventory_image}
+		
+		minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..row[1],def)
+		
+		def = table.copy(def)
+		def.description = description.. " " ..row[4]
+		def.inventory_image = tiles.. "^letters_" ..row[2].. "_overlay.png^[makealpha:255,126,126"
+		def.wield_image = def.inventory_image
+		def.tiles = {def.inventory_image}
+	
+		minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..row[2], def)
+		
 		--[[minetest.register_craft({
 			output = from_node,
 			recipe = {

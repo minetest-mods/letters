@@ -8,17 +8,32 @@ The Letter Cutter textures use parts of the default wood and tree textures made 
 
 Use this code to allow blocks to have letters registered from them:
 ```lua
-letters.register_letters(modname, subname, from_node, description, tiles)
+letters.register_letters(modname, subname, from_node, description, tiles, def)
 ```
 Modname is the mod that the node belongs to.
 Subname is the actual name of the node.
 From_nobe is the node that the letters will be crafted from (Usually modname:subname).
 Description is the description of the node.
 Tiles defines the image that will be used with the node.
+Def for all other parameters. (If there is nothing write:{})
 
 For example, if I wanted to register marble, from the mod darkage, this is the code I would use:
 ```lua
-letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
+letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png", {})
+```
+Add letters with unifieddye.
+```lua
+letters.register_letters("darkage",
+	"marble",
+	"darkage:marble", 
+	"Marble", 
+	"darkage_marble.png",
+	{
+		paramtype2 = "colorwallmounted", 
+		palette = "unifieddyes_palette_colorwallmounted.png", 
+		groups = {not_in_creative_inventory=1, not_in_craft_guide=1, oddly_breakable_by_hand=1, attached_node=1, ud_param2_colorable=1}
+	}
+)
 ```
 You will need to add letters as a dependency to your mod, or include the registrations is the code:
 ```lua
