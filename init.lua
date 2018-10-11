@@ -31,6 +31,9 @@ letter_cutter = {}
 letter_cutter.known_nodes = {}
 
 function letters.register_letters(modname, subname, from_node, description, tiles, def)
+
+	def = def and table.copy(def) or {} 
+
 	--default node
 	def.drawtype = "signlike"
 	def.paramtype = "light"
