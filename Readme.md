@@ -15,11 +15,11 @@ Subname is the actual name of the node.
 From_nobe is the node that the letters will be crafted from (Usually modname:subname).
 Description is the description of the node.
 Tiles defines the image that will be used with the node.
-Def for all other parameters. (If there is nothing write:{})
+Def (optional) may contain additional node definition parameters. Some might be overwritten to make the letters look and work as intended.
 
 For example, if I wanted to register marble, from the mod darkage, this is the code I would use:
 ```lua
-letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png", {})
+letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
 ```
 Add letters with unifieddye.
 ```lua

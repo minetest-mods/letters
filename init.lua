@@ -48,10 +48,10 @@ function letters.register_letters(modname, subname, from_node, description, tile
 		--wall_side = <default>
 	}
 	def.groups = def.groups or {
-		not_in_creative_inventory=1,
-		not_in_craft_guide=1,
-		oddly_breakable_by_hand=1,
-		attached_node=1
+		not_in_creative_inventory = 1,
+		not_in_craft_guide = 1,
+		oddly_breakable_by_hand = 1,
+		attached_node = 1
 	}
 	def.legacy_wallmounted = false
 	
