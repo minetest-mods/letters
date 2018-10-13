@@ -8,11 +8,11 @@ The Letter Cutter textures use parts of the default wood and tree textures made 
 
 Use this code to allow blocks to have letters registered from them:
 ```lua
-letters.register_letters(modname, subname, from_node, description, tiles, def(optional))
+letters.register_letters(modname, subname, from_node, description, tiles, def)
 ```
 - Modname is the mod that the node belongs to.
 - Subname is the actual name of the node.
-- From_nobe is the node that the letters will be crafted from (Usually modname:subname).
+- From_node is the node that the letters will be crafted from (Usually modname:subname).
 - Description is the description of the node.
 - Tiles defines the image that will be used with the node.
 - Def (optional) may contain additional node definition parameters. Some might be overwritten to make the letters look and work as intended.
