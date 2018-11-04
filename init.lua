@@ -30,9 +30,12 @@ letters = {
 letter_cutter = {}
 letter_cutter.known_nodes = {}
 
+letter_cutter.show_item_list = dofile(
+	minetest.get_modpath(minetest.get_current_modname())..'/itemlist.lua')
+
 function letters.register_letters(modname, subname, from_node, description, tiles, def)
 
-	def = def and table.copy(def) or {} 
+	def = def and table.copy(def) or {}
 
 	--default node
 	def.drawtype = "signlike"
@@ -54,26 +57,26 @@ function letters.register_letters(modname, subname, from_node, description, tile
 		attached_node = 1
 	}
 	def.legacy_wallmounted = false
-	
 
-	for _, row in ipairs(letters) do	
-	
+
+	for _, row in ipairs(letters) do
+
 		def = table.copy(def)
 		def.description = description.. " " ..row[3]
 		def.inventory_image = tiles.. "^letters_" ..row[1].. "_overlay.png^[makealpha:255,126,126"
 		def.wield_image = def.inventory_image
 		def.tiles = {def.inventory_image}
-		
+
 		minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..row[1],def)
-		
+
 		def = table.copy(def)
 		def.description = description.. " " ..row[4]
 		def.inventory_image = tiles.. "^letters_" ..row[2].. "_overlay.png^[makealpha:255,126,126"
 		def.wield_image = def.inventory_image
 		def.tiles = {def.inventory_image}
-	
+
 		minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..row[2], def)
-		
+
 		--[[minetest.register_craft({
 			output = from_node,
 			recipe = {
@@ -81,7 +84,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 				{modname..":"..name, modname..":"..name, modname..":"..name},
 				{modname..":"..name, modname..":"..name, modname..":"..name},
 			},
-		})--]]				
+		})--]]
 	end
 	letter_cutter.known_nodes[from_node] = {modname, subname}
 end
@@ -210,7 +213,7 @@ function letter_cutter:update_inventory_lower(pos, amount)
 		self:reset_lower(pos)
 		return
 	end
- 
+
 	local stack = inv:get_stack("input",  1)
 	if stack:is_empty() then
 		self:reset_lower(pos)
@@ -222,7 +225,7 @@ function letter_cutter:update_inventory_lower(pos, amount)
 	local modname  = name_parts[1] or ""
 	local material = name_parts[2] or ""
 
-	inv:set_list("input", { 
+	inv:set_list("input", {
 		node_name.. " " .. math.floor(amount)
 	})
 
@@ -248,7 +251,7 @@ function letter_cutter:update_inventory_upper(pos, amount)
 		self:reset_upper(pos)
 		return
 	end
- 
+
 	local stack = inv:get_stack("input",  1)
 	if stack:is_empty() then
 		self:reset_upper(pos)
@@ -260,7 +263,7 @@ function letter_cutter:update_inventory_upper(pos, amount)
 	local modname  = name_parts[1] or ""
 	local material = name_parts[2] or ""
 
-	inv:set_list("input", { 
+	inv:set_list("input", {
 		node_name.. " " .. math.floor(amount)
 	})
 
@@ -295,7 +298,7 @@ function letter_cutter.allow_metadata_inventory_put(
 	local inv  = meta:get_inventory()
 	local stackname = stack:get_name()
 	local count = stack:get_count()
-	
+
 	-- Only accept certain blocks as input which are known to be craftable into stairs:
 	if listname == "input" then
 		if not inv:is_empty("input") and
@@ -367,6 +370,7 @@ function letter_cutter.on_construct_lower(pos)
 			"label[0,0;Input\nmaterial]" ..
 			"list[current_name;input;1.5,0;1,1;]" ..
 			"list[current_name;output;2.8,0;8,4;]" ..
+			"button[0,1;2.5,1;itemlist;Cuttable materials]" ..
 			"list[current_player;main;1.5,5;8,4;]")
 
 	meta:set_int("anz", 0) -- No microblocks inside yet.
@@ -386,6 +390,7 @@ function letter_cutter.on_construct_upper(pos)
 			"label[0,0;Input\nmaterial]" ..
 			"list[current_name;input;1.5,0;1,1;]" ..
 			"list[current_name;output;2.8,0;8,4;]" ..
+			"button[0,1;2.5,1;itemlist;Cuttable materials]" ..
 			"list[current_player;main;1.5,5;8,4;]")
 
 	meta:set_int("anz", 0) -- No microblocks inside yet.
@@ -409,11 +414,21 @@ function letter_cutter.can_dig(pos,player)
 	return true
 end
 
+function letter_cutter.on_receive_fields(pos, formname, fields, sender)
+	if fields.itemlist then
+		local list = {}
+		for name, t in pairs(letter_cutter.known_nodes) do
+			list[#list+1] = name
+		end
+		letter_cutter.show_item_list(sender, 'Cuttable materials', list, pos)
+	end
+end
+
 minetest.register_node("letters:letter_cutter_lower",  {
-	description = "Lower Case Leter Cutter", 
-	drawtype = "nodebox", 
+	description = "Lower Case Leter Cutter",
+	drawtype = "nodebox",
 	node_box = {
-		type = "fixed", 
+		type = "fixed",
 		fixed = {
 			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125}, -- NodeBox1
 			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375}, -- NodeBox2
@@ -434,9 +449,9 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	tiles = {"letters_letter_cutter_lower_top.png",
 		"default_tree.png",
 		"letters_letter_cutter_side.png"},
-	paramtype = "light", 
+	paramtype = "light",
 	sunlight_propagates = true,
-	paramtype2 = "facedir", 
+	paramtype2 = "facedir",
 	groups = {choppy = 2,oddly_breakable_by_hand = 2},
 	sounds = default.node_sound_wood_defaults(),
 	on_construct = letter_cutter.on_construct_lower,
@@ -457,6 +472,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
 	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put_lower,
 	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take_lower,
+	on_receive_fields = letter_cutter.on_receive_fields,
 })
 
 minetest.register_craft({
@@ -469,10 +485,10 @@ minetest.register_craft({
 })
 
 minetest.register_node("letters:letter_cutter_upper",  {
-	description = "Upper Case Leter Cutter", 
-	drawtype = "nodebox", 
+	description = "Upper Case Leter Cutter",
+	drawtype = "nodebox",
 	node_box = {
-		type = "fixed", 
+		type = "fixed",
 		fixed = {
 			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125}, -- NodeBox1
 			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375}, -- NodeBox2
@@ -490,9 +506,9 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	tiles = {"letters_letter_cutter_upper_top.png",
 		"default_tree.png",
 		"letters_letter_cutter_side.png"},
-	paramtype = "light", 
+	paramtype = "light",
 	sunlight_propagates = true,
-	paramtype2 = "facedir", 
+	paramtype2 = "facedir",
 	groups = {choppy = 2,oddly_breakable_by_hand = 2},
 	sounds = default.node_sound_wood_defaults(),
 	on_construct = letter_cutter.on_construct_upper,
@@ -513,6 +529,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
 	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put_upper,
 	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take_upper,
+	on_receive_fields = letter_cutter.on_receive_fields,
 })
 
 minetest.register_craft({
