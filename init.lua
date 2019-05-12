@@ -27,6 +27,12 @@ letters = {
 	{"zl", "zu", "z", "Z"},
 }
 
+letters_reversed = {}
+
+for i, t in ipairs(letters) do
+	letters_reversed[t[3]] = i
+end
+
 letter_cutter = {}
 letter_cutter.known_nodes = {}
 
@@ -362,20 +368,113 @@ function letter_cutter.on_metadata_inventory_take_upper(
 	-- The recycle field plays no role here since it is processed immediately.
 end
 
+function letter_cutter.remove_from_input(pos, origname, count)
+	local node = minetest.get_node(pos)
+	local meta = minetest.get_meta(pos)
+
+	local cutterinv = meta:get_inventory()
+
+	local removed = cutterinv:remove_item("input", origname .. " " .. tostring(count))
+	if node.name == "letters:letter_cutter_upper" then
+		letter_cutter:update_inventory_upper(pos, -removed:get_count())
+	else
+		letter_cutter:update_inventory_lower(pos, -removed:get_count())
+	end
+end
+
 gui_slots = "listcolors[#606060AA;#808080;#101010;#202020;#FFF]"
 
-function letter_cutter.on_construct_lower(pos)
+local function update_cutter_formspec(pos)
 	local meta = minetest.get_meta(pos)
 	meta:set_string("formspec", "size[11,9]" ..gui_slots..
 			"label[0,0;Input\nmaterial]" ..
 			"list[current_name;input;1.5,0;1,1;]" ..
 			"list[current_name;output;2.8,0;8,4;]" ..
 			"button[0,1;2.5,1;itemlist;Cuttable materials]" ..
-			"list[current_player;main;1.5,5;8,4;]")
+			"list[current_player;main;1.5,5;8,4;]" ..
+			"field[0.5,4.3;3,1;text;Enter text;${text}]" ..
+			"button[3.5,4;2,1;make_text;Make text]" ..
+			"label[5.5,4.2;" .. minetest.formspec_escape(meta:get_string("message")) .. "]")
+end
+
+local function cut_from_text(pos, input_text, player)
+	local playername = player:get_player_name()
+
+	local node = minetest.get_node(pos)
+	local meta = minetest.get_meta(pos)
+
+	local cutterinv = meta:get_inventory()
+	local cutterinput = cutterinv:get_list("input")
+	local cuttercount = cutterinput[1]:get_count()
+
+	if cuttercount < 1 then
+		meta:set_string("message", "No materials.")
+		update_cutter_formspec(pos)
+		return
+	end
+
+	local origname = cutterinput[1]:get_name()
+
+	local playerinv = player:get_inventory()
+	local playermain = playerinv:get_list("main")
+
+	meta:set_string("text", input_text)
+
+	local totalcost = 0
+	local throwawayinv = minetest.create_detached_inventory("letter_cutter:throwaway", {}, playername)
+
+	throwawayinv:set_size("main", playerinv:get_size("main"))
+	throwawayinv:set_list("main", playerinv:get_list("main"))
+
+	for i = 1, #input_text do
+		local char = input_text:sub(i, i)
+
+		if char:match("[%u%l]") then
+			local isupper = char == char:upper()
+			local charset = isupper and letter_cutter.names_upper or letter_cutter.names_lower
+			local lettername = origname .. "_" .. charset[letters_reversed[char:lower()]][1]
+
+			if cuttercount < totalcost + cost then
+				meta:set_string("message", "Not enough materials.")
+				update_cutter_formspec(pos)
+
+				minetest.remove_detached_inventory("letter_cutter:throwaway")
+				return
+			end
+
+			if lettername and not throwawayinv:room_for_item("main", lettername) then
+				meta:set_string("message", "Not enough room.")
+				update_cutter_formspec(pos)
+
+				minetest.remove_detached_inventory("letter_cutter:throwaway")
+				return
+			end
+
+			totalcost = totalcost + cost
+
+			throwawayinv:add_item("main", lettername)
+		end
+	end
+
+	meta:set_string("message", "Successfully added letters to inventory.")
+	update_cutter_formspec(pos)
+
+	letter_cutter.remove_from_input(pos, origname, tostring(math.ceil(totalcost)))
+	playerinv:set_list("main", throwawayinv:get_list("main"))
+
+	minetest.remove_detached_inventory("letter_cutter:throwaway")
+end
+
+function letter_cutter.on_construct_lower(pos)
+	local meta = minetest.get_meta(pos)
+	update_cutter_formspec(pos)
 
 	meta:set_int("anz", 0) -- No microblocks inside yet.
 	meta:set_string("max_offered", 9) -- How many items of this kind are offered by default?
 	meta:set_string("infotext", "Letter Cutter (Lower) is empty")
+
+	meta:set_string("text", "")
+	meta:set_string("message", "")
 
 	local inv = meta:get_inventory()
 	inv:set_size("input", 1)    -- Input slot for full blocks of material x.
@@ -386,16 +485,14 @@ end
 
 function letter_cutter.on_construct_upper(pos)
 	local meta = minetest.get_meta(pos)
-	meta:set_string("formspec", "size[11,9]" ..gui_slots..
-			"label[0,0;Input\nmaterial]" ..
-			"list[current_name;input;1.5,0;1,1;]" ..
-			"list[current_name;output;2.8,0;8,4;]" ..
-			"button[0,1;2.5,1;itemlist;Cuttable materials]" ..
-			"list[current_player;main;1.5,5;8,4;]")
+	update_cutter_formspec(pos)
 
 	meta:set_int("anz", 0) -- No microblocks inside yet.
 	meta:set_string("max_offered", 9) -- How many items of this kind are offered by default?
 	meta:set_string("infotext", "Letter Cutter (Upper) is empty")
+
+	meta:set_string("text", "")
+	meta:set_string("message", "")
 
 	local inv = meta:get_inventory()
 	inv:set_size("input", 1)    -- Input slot for full blocks of material x.
@@ -421,6 +518,12 @@ function letter_cutter.on_receive_fields(pos, formname, fields, sender)
 			list[#list+1] = name
 		end
 		letter_cutter.show_item_list(sender, 'Cuttable materials', list, pos)
+		return
+	end
+
+	if fields.make_text and fields.text then
+		cut_from_text(pos, fields.text, sender)
+		return
 	end
 end
 
