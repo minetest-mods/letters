@@ -28,7 +28,7 @@ for _, row in pairs(default_nodes) do
 	local nodename = "default:" ..row[1]
 	local ndef = minetest.registered_nodes[nodename]
 	local texture = "default_" ..row[2].. ".png"
-	letters.register_letters("default", row[1], nodename, ndef.description, texture) 
+	letters.register_letters("default", row[1], nodename, ndef.description, texture)
 end
 
 
@@ -41,7 +41,7 @@ if minetest.get_modpath("darkage") then
 	letters.register_letters("darkage", "slate", "darkage:slate", "Slate", "darkage_slate.png")
 	letters.register_letters("darkage", "gneiss", "darkage:gneiss", "Gneiss", "darkage_gneiss.png")
 	letters.register_letters("darkage", "chalk", "darkage:chalk", "Chalk", "darkage_chalk.png")
-	letters.register_letters("darkage", "ors_cobble", "darkage:ors_cobble", "Old Red Sandstone Cobble", "darkage_ors_brick.png")	
+	letters.register_letters("darkage", "ors_cobble", "darkage:ors_cobble", "Old Red Sandstone Cobble", "darkage_ors_brick.png")
 	letters.register_letters("darkage", "slate_cobble", "darkage:slate_cobble", "Slate Cobble", "darkage_slate_brick.png")
 	letters.register_letters("darkage", "gneiss_cobble", "darkage:gneiss_cobble", "Gneiss Cobble", "darkage_gneiss_brick.png")
 	letters.register_letters("darkage", "basalt_cobble", "darkage:basalt_cobble", "Basalt Cobble", "darkage_basalt_brick.png")
