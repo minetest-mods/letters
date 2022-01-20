@@ -27,13 +27,13 @@ letters = {
 	{"zl", "zu", "z", "Z"},
 }
 
-letters_reversed = {}
+local letters_reversed = {}
 
 for i, t in ipairs(letters) do
 	letters_reversed[t[3]] = i
 end
 
-letter_cutter = {}
+local letter_cutter = {}
 letter_cutter.known_nodes = {}
 
 letter_cutter.show_item_list = dofile(
@@ -95,7 +95,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 	letter_cutter.known_nodes[from_node] = {modname, subname}
 end
 
-cost = 0.110
+local cost = 0.110
 
 letter_cutter.names_lower = {
 	{"letter_al"},
@@ -322,9 +322,6 @@ end
 
 function letter_cutter.on_metadata_inventory_put_lower(
 		pos, listname, index, stack, player)
-	local meta = minetest.get_meta(pos)
-	local inv  = meta:get_inventory()
-	local stackname = stack:get_name()
 	local count = stack:get_count()
 
 	if listname == "input" then
@@ -334,9 +331,6 @@ end
 
 function letter_cutter.on_metadata_inventory_put_upper(
 		pos, listname, index, stack, player)
-	local meta = minetest.get_meta(pos)
-	local inv  = meta:get_inventory()
-	local stackname = stack:get_name()
 	local count = stack:get_count()
 
 	if listname == "input" then
@@ -382,7 +376,7 @@ function letter_cutter.remove_from_input(pos, origname, count)
 	end
 end
 
-gui_slots = "listcolors[#606060AA;#808080;#101010;#202020;#FFF]"
+local gui_slots = "listcolors[#606060AA;#808080;#101010;#202020;#FFF]"
 
 local function update_cutter_formspec(pos)
 	local meta = minetest.get_meta(pos)
@@ -400,7 +394,6 @@ end
 local function cut_from_text(pos, input_text, player)
 	local playername = player:get_player_name()
 
-	local node = minetest.get_node(pos)
 	local meta = minetest.get_meta(pos)
 
 	local cutterinv = meta:get_inventory()
@@ -416,7 +409,6 @@ local function cut_from_text(pos, input_text, player)
 	local origname = cutterinput[1]:get_name()
 
 	local playerinv = player:get_inventory()
-	local playermain = playerinv:get_list("main")
 
 	meta:set_string("text", input_text)
 
