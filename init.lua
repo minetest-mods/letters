@@ -7,12 +7,15 @@ local letter_cutter = {}
 letter_cutter.known_nodes = {}
 letter_cutter.names_upper = {}
 letter_cutter.names_lower = {}
+letter_cutter.names_digit = {}
 for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
-	local char, group = tile:match("_(%a)(%a)_overlay")
+	local char, group = tile:match("_([%d%u%l])(%l)_overlay")
 	if char and group then
-		if group == "u" then
+		if group == "d" then
+			table.insert(letter_cutter.names_digit, "letter_" ..char..group)
+		elseif group == "u" then
 			table.insert(letter_cutter.names_upper, "letter_" ..char..group)
-		else
+		elseif group == "l" then
 			table.insert(letter_cutter.names_lower, "letter_" ..char..group)
 		end
 	end
@@ -47,13 +50,15 @@ function letters.register_letters(modname, subname, from_node, description, tile
 	def.legacy_wallmounted = false
 
 	for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
-		local char, group = tile:match("_(%a)(%a)_overlay")
+		local char, group = tile:match("_([%d%u%l])(%l)_overlay")
 		if char and group then
 			def = table.copy(def)
 
-			if group == "u" then
+			if group == "d" then
+				def.description = description.. " " ..char
+			elseif group == "u" then
 				def.description = description.. " " ..char:upper()
-			else
+			elseif group == "l" then
 				def.description = description.. " " ..char
 			end
 			def.inventory_image = tiles.. "^" ..tile.. "^[makealpha:255,126,126"
@@ -192,18 +197,22 @@ end
 
 function letter_cutter.group_name(pos)
 	local node = minetest.get_node(pos)
-	if node.name == "letters:letter_cutter_upper" then
+	if node.name == "letters:letter_cutter_digit" then
+		return "Digit"
+	elseif node.name == "letters:letter_cutter_upper" then
 		return "Upper"
-	else
+	elseif node.name == "letters:letter_cutter_lower" then
 		return "Lower"
 	end
 end
 
 function letter_cutter.group(pos)
 	local node = minetest.get_node(pos)
-	if node.name == "letters:letter_cutter_upper" then
+	if node.name == "letters:letter_cutter_digit" then
+		return letter_cutter.names_digit
+	elseif node.name == "letters:letter_cutter_upper" then
 		return letter_cutter.names_upper
-	else
+	elseif node.name == "letters:letter_cutter_lower" then
 		return letter_cutter.names_lower
 	end
 end
@@ -261,32 +270,39 @@ local function cut_from_text(pos, input_text, player)
 
 	for i = 1, #input_text do
 		local char = input_text:sub(i, i)
-
-		if char:match("[%u%l]") then
-			local isupper = char == char:upper()
-			local group = isupper and "u" or "l"
-			local lettername = origname .. "_" .. "letter_" ..char:lower() ..group
-
-			if cuttercount < totalcost + cost then
-				meta:set_string("message", "Not enough materials.")
-				update_cutter_formspec(pos)
-
-				minetest.remove_detached_inventory("letter_cutter:throwaway")
-				return
-			end
-
-			if lettername and not throwawayinv:room_for_item("main", lettername) then
-				meta:set_string("message", "Not enough room.")
-				update_cutter_formspec(pos)
-
-				minetest.remove_detached_inventory("letter_cutter:throwaway")
-				return
-			end
-
-			totalcost = totalcost + cost
-
-			throwawayinv:add_item("main", lettername)
+		local group
+		if char:match("%d") then
+			group = "d"
+		elseif char:match("%u") then
+			group = "u"
+			char = char:lower()
+		elseif char:match("%l") then
+			group = "l"
+		else
+			goto continue -- unrecognized, skip it
 		end
+
+		local lettername = origname .. "_" .. "letter_" ..char:lower() ..group
+		if cuttercount < totalcost + cost then
+			meta:set_string("message", "Not enough materials.")
+			update_cutter_formspec(pos)
+
+			minetest.remove_detached_inventory("letter_cutter:throwaway")
+			return
+		end
+
+		if lettername and not throwawayinv:room_for_item("main", lettername) then
+			meta:set_string("message", "Not enough room.")
+			update_cutter_formspec(pos)
+
+			minetest.remove_detached_inventory("letter_cutter:throwaway")
+			return
+		end
+
+		totalcost = totalcost + cost
+
+		throwawayinv:add_item("main", lettername)
+		::continue::
 	end
 
 	meta:set_string("message", "Successfully added letters to inventory.")
@@ -457,6 +473,65 @@ minetest.register_craft({
 		{"default:tree", "default:tree", "default:tree"},
 		{"default:wood", "default:steel_ingot", "default:wood"},
 		{"default:tree", "default:steel_ingot", "default:tree"},
+	},
+})
+
+minetest.register_node("letters:letter_cutter_digit",  {
+	description = "Digit Cutter",
+	drawtype = "nodebox",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125}, -- NodeBox1
+			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375}, -- NodeBox2
+			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375}, -- NodeBox3
+			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125}, -- NodeBox4
+			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5}, -- NodeBox5
+			{-0.0625, 0.25, 0.3125, 0, 0.3125, 0.1875}, -- NodeBox6
+			{0.125, 0.25, 0.3125, 0.1875, 0.3125, 0.1875}, -- NodeBox7
+			{-0.25, 0.25, 0.125, 0.25, 0.3125, 0.1875}, -- NodeBox8
+			{-0.125, 0.25, -0.0625, -0.0625, 0.3125, 0.125}, -- NodeBox9
+			{0.0625, 0.25, -0.0625, 0.125, 0.3125, 0.125}, -- NodeBox10
+			{-0.25, 0.25, -0.0625, 0.25, 0.3125, -0.125}, -- NodeBox11
+			{-0.1875, 0.25, -0.125, -0.125, 0.3125, -0.25}, -- NodeBox12
+			{0, 0.25, -0.125, 0.0625, 0.3125, -0.25}, -- NodeBox13
+		},
+	},
+	tiles = {"letters_letter_cutter_digit_top.png",
+		"default_tree.png",
+		"letters_letter_cutter_side.png"},
+	paramtype = "light",
+	sunlight_propagates = true,
+	paramtype2 = "facedir",
+	groups = {choppy = 2,oddly_breakable_by_hand = 2},
+	sounds = default.node_sound_wood_defaults(),
+	on_construct = letter_cutter.on_construct,
+	can_dig = letter_cutter.can_dig,
+	-- Set the owner of this circular saw.
+	after_place_node = function(pos, placer)
+		local meta = minetest.get_meta(pos)
+		local owner = placer and placer:get_player_name() or ""
+		meta:set_string("owner",  owner)
+		meta:set_string("infotext",
+				"Letter Cutter (Digit) is empty (owned by "
+					..meta:get_string("owner")..")")
+	end,
+	allow_metadata_inventory_move = letter_cutter.allow_metadata_inventory_move,
+	-- Only input- and recycle-slot are intended as input slots:
+	allow_metadata_inventory_put = letter_cutter.allow_metadata_inventory_put,
+	-- Taking is allowed from all slots (even the internal microblock slot). Moving is forbidden.
+	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
+	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put,
+	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take,
+	on_receive_fields = letter_cutter.on_receive_fields,
+})
+
+minetest.register_craft({
+	output = "letters:letter_cutter_digit",
+	recipe = {
+		{"default:tree", "default:tree", "default:tree"},
+		{"default:wood", "default:copper_ingot", "default:wood"},
+		{"default:tree", "", "default:tree"},
 	},
 })
 
