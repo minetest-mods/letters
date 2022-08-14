@@ -1,40 +1,22 @@
-letters = {
-	{"al", "au", "a", "A"},
-	{"bl", "bu", "b", "B"},
-	{"cl", "cu", "c", "C"},
-	{"dl", "du", "d", "D"},
-	{"el", "eu", "e", "E"},
-	{"fl", "fu", "f", "F"},
-	{"gl", "gu", "g", "G"},
-	{"hl", "hu", "h", "H"},
-	{"il", "iu", "i", "I"},
-	{"jl", "ju", "j", "J"},
-	{"kl", "ku", "k", "K"},
-	{"ll", "lu", "l", "L"},
-	{"ml", "mu", "m", "M"},
-	{"nl", "nu", "n", "N"},
-	{"ol", "ou", "o", "O"},
-	{"pl", "pu", "p", "P"},
-	{"ql", "qu", "q", "Q"},
-	{"rl", "ru", "r", "R"},
-	{"sl", "su", "s", "S"},
-	{"tl", "tu", "t", "T"},
-	{"ul", "uu", "u", "U"},
-	{"vl", "vu", "v", "V"},
-	{"wl", "wu", "w", "W"},
-	{"xl", "xu", "x", "X"},
-	{"yl", "yu", "y", "Y"},
-	{"zl", "zu", "z", "Z"},
-}
+letters = {}
 
-local letters_reversed = {}
-
-for i, t in ipairs(letters) do
-	letters_reversed[t[3]] = i
-end
+local lettersmod = minetest.get_current_modname()
+local letterspath = minetest.get_modpath(lettersmod)
 
 local letter_cutter = {}
 letter_cutter.known_nodes = {}
+letter_cutter.names_upper = {}
+letter_cutter.names_lower = {}
+for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
+	local char, group = tile:match("_(%a)(%a)_overlay")
+	if char and group then
+		if group == "u" then
+			table.insert(letter_cutter.names_upper, "letter_" ..char..group)
+		else
+			table.insert(letter_cutter.names_lower, "letter_" ..char..group)
+		end
+	end
+end
 
 letter_cutter.show_item_list = dofile(
 	minetest.get_modpath(minetest.get_current_modname())..'/itemlist.lua')
@@ -64,96 +46,27 @@ function letters.register_letters(modname, subname, from_node, description, tile
 	}
 	def.legacy_wallmounted = false
 
+	for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
+		local char, group = tile:match("_(%a)(%a)_overlay")
+		if char and group then
+			def = table.copy(def)
 
-	for _, row in ipairs(letters) do
+			if group == "u" then
+				def.description = description.. " " ..char:upper()
+			else
+				def.description = description.. " " ..char
+			end
+			def.inventory_image = tiles.. "^" ..tile.. "^[makealpha:255,126,126"
+			def.wield_image = def.inventory_image
+			def.tiles = {def.inventory_image}
 
-		def = table.copy(def)
-		def.description = description.. " " ..row[3]
-		def.inventory_image = tiles.. "^letters_" ..row[1].. "_overlay.png^[makealpha:255,126,126"
-		def.wield_image = def.inventory_image
-		def.tiles = {def.inventory_image}
-
-		minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..row[1],def)
-
-		def = table.copy(def)
-		def.description = description.. " " ..row[4]
-		def.inventory_image = tiles.. "^letters_" ..row[2].. "_overlay.png^[makealpha:255,126,126"
-		def.wield_image = def.inventory_image
-		def.tiles = {def.inventory_image}
-
-		minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..row[2], def)
-
-		--[[minetest.register_craft({
-			output = from_node,
-			recipe = {
-				{modname..":"..name, modname..":"..name, modname..":"..name},
-				{modname..":"..name, modname..":"..name, modname..":"..name},
-				{modname..":"..name, modname..":"..name, modname..":"..name},
-			},
-		})--]]
+			minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..char..group,def)
+		end
 	end
 	letter_cutter.known_nodes[from_node] = {modname, subname}
 end
 
 local cost = 0.110
-
-letter_cutter.names_lower = {
-	{"letter_al"},
-	{"letter_bl"},
-	{"letter_cl"},
-	{"letter_dl"},
-	{"letter_el"},
-	{"letter_fl"},
-	{"letter_gl"},
-	{"letter_hl"},
-	{"letter_il"},
-	{"letter_jl"},
-	{"letter_kl"},
-	{"letter_ll"},
-	{"letter_ml"},
-	{"letter_nl"},
-	{"letter_ol"},
-	{"letter_pl"},
-	{"letter_ql"},
-	{"letter_rl"},
-	{"letter_sl"},
-	{"letter_tl"},
-	{"letter_ul"},
-	{"letter_vl"},
-	{"letter_wl"},
-	{"letter_xl"},
-	{"letter_yl"},
-	{"letter_zl"},
-}
-
-letter_cutter.names_upper = {
-	{"letter_au"},
-	{"letter_bu"},
-	{"letter_cu"},
-	{"letter_du"},
-	{"letter_eu"},
-	{"letter_fu"},
-	{"letter_gu"},
-	{"letter_hu"},
-	{"letter_iu"},
-	{"letter_ju"},
-	{"letter_ku"},
-	{"letter_lu"},
-	{"letter_mu"},
-	{"letter_nu"},
-	{"letter_ou"},
-	{"letter_pu"},
-	{"letter_qu"},
-	{"letter_ru"},
-	{"letter_su"},
-	{"letter_tu"},
-	{"letter_uu"},
-	{"letter_vu"},
-	{"letter_wu"},
-	{"letter_xu"},
-	{"letter_yu"},
-	{"letter_zu"},
-}
 
 function letter_cutter:get_output_inv_lower(modname, subname, amount, max)
 
@@ -163,7 +76,7 @@ function letter_cutter:get_output_inv_lower(modname, subname, amount, max)
 	end
 
 	for i, t in ipairs(letter_cutter.names_lower) do
-		table.insert(list, modname .. ":" .. subname .. "_" .. t[1]
+		table.insert(list, modname .. ":" .. subname .. "_" .. t
 			.. " " .. math.min(math.floor(amount/cost), max))
 	end
 	return list
@@ -177,7 +90,7 @@ function letter_cutter:get_output_inv_upper(modname, subname, amount, max)
 	end
 
 	for i, t in ipairs(letter_cutter.names_upper) do
-		table.insert(list, modname .. ":" .. subname .. "_" .. t[1]
+		table.insert(list, modname .. ":" .. subname .. "_" .. t
 			.. " " .. math.min(math.floor(amount/cost), max))
 	end
 	return list
@@ -423,8 +336,8 @@ local function cut_from_text(pos, input_text, player)
 
 		if char:match("[%u%l]") then
 			local isupper = char == char:upper()
-			local charset = isupper and letter_cutter.names_upper or letter_cutter.names_lower
-			local lettername = origname .. "_" .. charset[letters_reversed[char:lower()]][1]
+			local group = isupper and "u" or "l"
+			local lettername = origname .. "_" .. "letter_" ..char:lower() ..group
 
 			if cuttercount < totalcost + cost then
 				meta:set_string("message", "Not enough materials.")
