@@ -68,35 +68,21 @@ end
 
 local cost = 0.110
 
-function letter_cutter:get_output_inv_lower(modname, subname, amount, max)
+function letter_cutter:get_output_inv(modname, subname, amount, max, group)
 
 	local list = {}
 	if amount < 1 then
 		return list
 	end
 
-	for i, t in ipairs(letter_cutter.names_lower) do
+	for i, t in ipairs(group) do
 		table.insert(list, modname .. ":" .. subname .. "_" .. t
 			.. " " .. math.min(math.floor(amount/cost), max))
 	end
 	return list
 end
 
-function letter_cutter:get_output_inv_upper(modname, subname, amount, max)
-
-	local list = {}
-	if amount < 1 then
-		return list
-	end
-
-	for i, t in ipairs(letter_cutter.names_upper) do
-		table.insert(list, modname .. ":" .. subname .. "_" .. t
-			.. " " .. math.min(math.floor(amount/cost), max))
-	end
-	return list
-end
-
-function letter_cutter:reset_lower(pos)
+function letter_cutter:reset(pos)
 	local meta = minetest.get_meta(pos)
 	local inv  = meta:get_inventory()
 
@@ -104,38 +90,27 @@ function letter_cutter:reset_lower(pos)
 	inv:set_list("output", {})
 	meta:set_int("anz", 0)
 
+	local groupname = letter_cutter.group_name(pos)
 	meta:set_string("infotext",
-			"Letter Cutter (Lower) is empty (owned by "..
+			"Letter Cutter ("..groupname..") is empty (owned by "..
 				meta:get_string("owner")..")")
 end
 
-function letter_cutter:reset_upper(pos)
-	local meta = minetest.get_meta(pos)
-	local inv  = meta:get_inventory()
-
-	inv:set_list("input",  {})
-	inv:set_list("output", {})
-	meta:set_int("anz", 0)
-
-	meta:set_string("infotext",
-			"Letter Cutter (Upper) is empty (owned by "..
-				meta:get_string("owner")..")")
-end
-
-function letter_cutter:update_inventory_lower(pos, amount)
+function letter_cutter:update_inventory(pos, amount)
 	local meta          = minetest.get_meta(pos)
 	local inv           = meta:get_inventory()
 
 	amount = meta:get_int("anz") + amount
 
+	local groupname = letter_cutter.group_name(pos)
 	if amount < 1 then -- If the last block is taken out.
-		self:reset_lower(pos)
+		self:reset(pos)
 		return
 	end
 
 	local stack = inv:get_stack("input",  1)
 	if stack:is_empty() then
-		self:reset_lower(pos)
+		self:reset(pos)
 		return
 
 	end
@@ -150,54 +125,15 @@ function letter_cutter:update_inventory_lower(pos, amount)
 
 	-- Display:
 	inv:set_list("output",
-		self:get_output_inv_lower(modname, material, amount,
-				meta:get_int("max_offered")))
+		self:get_output_inv(modname, material, amount,
+				meta:get_int("max_offered"), letter_cutter.group(pos)))
 	-- Store how many microblocks are available:
 	meta:set_int("anz", amount)
 
 	meta:set_string("infotext",
-			"Letter Cutter (Lower) is working (owned by "..
+			"Letter Cutter ("..groupname..") is working (owned by "..
 				meta:get_string("owner")..")")
 end
-
-function letter_cutter:update_inventory_upper(pos, amount)
-	local meta          = minetest.get_meta(pos)
-	local inv           = meta:get_inventory()
-
-	amount = meta:get_int("anz") + amount
-
-	if amount < 1 then -- If the last block is taken out.
-		self:reset_upper(pos)
-		return
-	end
-
-	local stack = inv:get_stack("input",  1)
-	if stack:is_empty() then
-		self:reset_upper(pos)
-		return
-
-	end
-	local node_name = stack:get_name() or ""
-	local name_parts = letter_cutter.known_nodes[node_name] or ""
-	local modname  = name_parts[1] or ""
-	local material = name_parts[2] or ""
-
-	inv:set_list("input", {
-		node_name.. " " .. math.floor(amount)
-	})
-
-	-- Display:
-	inv:set_list("output",
-		self:get_output_inv_upper(modname, material, amount,
-				meta:get_int("max_offered")))
-	-- Store how many microblocks are available:
-	meta:set_int("anz", amount)
-
-	meta:set_string("infotext",
-			"Letter Cutter (Upper) is working (owned by "..
-				meta:get_string("owner")..")")
-end
-
 
 function letter_cutter.allow_metadata_inventory_move(
 		pos, from_list, from_index, to_list, to_index, count, player)
@@ -233,60 +169,52 @@ function letter_cutter.allow_metadata_inventory_put(
 	end
 end
 
-function letter_cutter.on_metadata_inventory_put_lower(
+function letter_cutter.on_metadata_inventory_put(
 		pos, listname, index, stack, player)
 	local count = stack:get_count()
 
 	if listname == "input" then
-		letter_cutter:update_inventory_lower(pos, count)
+		letter_cutter:update_inventory(pos, count)
 	end
 end
 
-function letter_cutter.on_metadata_inventory_put_upper(
-		pos, listname, index, stack, player)
-	local count = stack:get_count()
-
-	if listname == "input" then
-		letter_cutter:update_inventory_upper(pos, count)
-	end
-end
-
-function letter_cutter.on_metadata_inventory_take_lower(
+function letter_cutter.on_metadata_inventory_take(
 		pos, listname, index, stack, player)
 	if listname == "output" then
 		-- We do know how much each block at each position costs:
-		letter_cutter:update_inventory_lower(pos, 8 * -cost)
+		letter_cutter:update_inventory(pos, 8 * -cost)
 	elseif listname == "input" then
 		-- Each normal (= full) block taken costs 8 microblocks:
-		letter_cutter:update_inventory_lower(pos, 8 * -stack:get_count())
+		letter_cutter:update_inventory(pos, 8 * -stack:get_count())
 	end
 	-- The recycle field plays no role here since it is processed immediately.
 end
 
-function letter_cutter.on_metadata_inventory_take_upper(
-		pos, listname, index, stack, player)
-	if listname == "output" then
-		-- We do know how much each block at each position costs:
-		letter_cutter:update_inventory_upper(pos, 8 * -cost)
-	elseif listname == "input" then
-		-- Each normal (= full) block taken costs 8 microblocks:
-		letter_cutter:update_inventory_upper(pos, 8 * -stack:get_count())
+function letter_cutter.group_name(pos)
+	local node = minetest.get_node(pos)
+	if node.name == "letters:letter_cutter_upper" then
+		return "Upper"
+	else
+		return "Lower"
 	end
-	-- The recycle field plays no role here since it is processed immediately.
+end
+
+function letter_cutter.group(pos)
+	local node = minetest.get_node(pos)
+	if node.name == "letters:letter_cutter_upper" then
+		return letter_cutter.names_upper
+	else
+		return letter_cutter.names_lower
+	end
 end
 
 function letter_cutter.remove_from_input(pos, origname, count)
-	local node = minetest.get_node(pos)
 	local meta = minetest.get_meta(pos)
 
 	local cutterinv = meta:get_inventory()
 
 	local removed = cutterinv:remove_item("input", origname .. " " .. tostring(count))
-	if node.name == "letters:letter_cutter_upper" then
-		letter_cutter:update_inventory_upper(pos, -removed:get_count())
-	else
-		letter_cutter:update_inventory_lower(pos, -removed:get_count())
-	end
+	letter_cutter:update_inventory(pos, -removed:get_count())
 end
 
 local gui_slots = "listcolors[#606060AA;#808080;#101010;#202020;#FFF]"
@@ -370,13 +298,14 @@ local function cut_from_text(pos, input_text, player)
 	minetest.remove_detached_inventory("letter_cutter:throwaway")
 end
 
-function letter_cutter.on_construct_lower(pos)
+function letter_cutter.on_construct(pos)
 	local meta = minetest.get_meta(pos)
+	local groupname = letter_cutter.group_name(pos)
 	update_cutter_formspec(pos)
 
 	meta:set_int("anz", 0) -- No microblocks inside yet.
 	meta:set_string("max_offered", 9) -- How many items of this kind are offered by default?
-	meta:set_string("infotext", "Letter Cutter (Lower) is empty")
+	meta:set_string("infotext", "Letter Cutter ("..groupname..") is empty")
 
 	meta:set_string("text", "")
 	meta:set_string("message", "")
@@ -385,25 +314,7 @@ function letter_cutter.on_construct_lower(pos)
 	inv:set_size("input", 1)    -- Input slot for full blocks of material x.
 	inv:set_size("output", 4*8) -- 4x8 versions of stair-parts of material x.
 
-	letter_cutter:reset_lower(pos)
-end
-
-function letter_cutter.on_construct_upper(pos)
-	local meta = minetest.get_meta(pos)
-	update_cutter_formspec(pos)
-
-	meta:set_int("anz", 0) -- No microblocks inside yet.
-	meta:set_string("max_offered", 9) -- How many items of this kind are offered by default?
-	meta:set_string("infotext", "Letter Cutter (Upper) is empty")
-
-	meta:set_string("text", "")
-	meta:set_string("message", "")
-
-	local inv = meta:get_inventory()
-	inv:set_size("input", 1)    -- Input slot for full blocks of material x.
-	inv:set_size("output", 4*8) -- 4x8 versions of stair-parts of material x.
-
-	letter_cutter:reset_upper(pos)
+	letter_cutter:reset(pos)
 end
 
 
@@ -462,7 +373,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	paramtype2 = "facedir",
 	groups = {choppy = 2,oddly_breakable_by_hand = 2},
 	sounds = default.node_sound_wood_defaults(),
-	on_construct = letter_cutter.on_construct_lower,
+	on_construct = letter_cutter.on_construct,
 	can_dig = letter_cutter.can_dig,
 	-- Set the owner of this circular saw.
 	after_place_node = function(pos, placer)
@@ -478,8 +389,8 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	allow_metadata_inventory_put = letter_cutter.allow_metadata_inventory_put,
 	-- Taking is allowed from all slots (even the internal microblock slot). Moving is forbidden.
 	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
-	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put_lower,
-	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take_lower,
+	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put,
+	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take,
 	on_receive_fields = letter_cutter.on_receive_fields,
 })
 
@@ -519,7 +430,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	paramtype2 = "facedir",
 	groups = {choppy = 2,oddly_breakable_by_hand = 2},
 	sounds = default.node_sound_wood_defaults(),
-	on_construct = letter_cutter.on_construct_upper,
+	on_construct = letter_cutter.on_construct,
 	can_dig = letter_cutter.can_dig,
 	-- Set the owner of this circular saw.
 	after_place_node = function(pos, placer)
@@ -535,8 +446,8 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	allow_metadata_inventory_put = letter_cutter.allow_metadata_inventory_put,
 	-- Taking is allowed from all slots (even the internal microblock slot). Moving is forbidden.
 	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
-	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put_upper,
-	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take_upper,
+	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put,
+	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take,
 	on_receive_fields = letter_cutter.on_receive_fields,
 })
 
