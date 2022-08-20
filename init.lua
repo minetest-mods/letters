@@ -5,6 +5,8 @@ local letterspath = minetest.get_modpath(lettersmod)
 
 local letter_cutter = {}
 letter_cutter.known_nodes = {}
+
+-- Use files in the textures folder to populate letter group tables.
 letter_cutter.names_upper = {}
 letter_cutter.names_lower = {}
 letter_cutter.names_digit = {}
@@ -24,8 +26,14 @@ end
 letter_cutter.show_item_list = dofile(
 	minetest.get_modpath(minetest.get_current_modname())..'/itemlist.lua')
 
+--- Register a node for use as a material in letter cutters.
+-- @param modname is the mod that the node belongs to.
+-- @param subname is the actual name of the node.
+-- @param from_node is the node that the letters will be crafted from (Usually modname:subname).
+-- @param description is the description of the node.
+-- @param tiles defines the image that will be used with the node.
+-- @param basedef (optional) may contain additional node definition parameters. Some might be overwritten to make the letters look and work as intended.
 function letters.register_letters(modname, subname, from_node, description, tiles, basedef)
-
 	basedef = basedef and table.copy(basedef) or {}
 
 	--default node
@@ -49,6 +57,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 	}
 	basedef.legacy_wallmounted = false
 
+	-- Register a new node for each letter using the provided from_node as the material.
 	for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
 		local char, group = tile:match("_([%d%u%l])(%l)_overlay")
 		if char and group then
@@ -73,8 +82,8 @@ end
 
 local cost = 0.110
 
+-- Collect items to display in letter cutter output inventory.
 function letter_cutter:get_output_inv(modname, subname, amount, max, group)
-
 	local list = {}
 	if amount < 1 then
 		return list
@@ -87,6 +96,7 @@ function letter_cutter:get_output_inv(modname, subname, amount, max, group)
 	return list
 end
 
+-- Reset letter cutter to its empty state.
 function letter_cutter:reset(pos)
 	local meta = minetest.get_meta(pos)
 	local inv  = meta:get_inventory()
@@ -101,6 +111,7 @@ function letter_cutter:reset(pos)
 				meta:get_string("owner")..")")
 end
 
+-- Update letter cutter inventories with available material count.
 function letter_cutter:update_inventory(pos, amount)
 	local meta          = minetest.get_meta(pos)
 	local inv           = meta:get_inventory()
@@ -140,12 +151,19 @@ function letter_cutter:update_inventory(pos, amount)
 				meta:get_string("owner")..")")
 end
 
+-- Implement allow_metadata_inventory_move.
+-- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
+--
+-- Moving is forbidden.
 function letter_cutter.allow_metadata_inventory_move(
 		pos, from_list, from_index, to_list, to_index, count, player)
 	return 0
 end
 
 
+-- Implement allow_metadata_inventory_put.
+-- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
+--
 -- Only input- and recycle-slot are intended as input slots:
 function letter_cutter.allow_metadata_inventory_put(
 		pos, listname, index, stack, player)
@@ -174,6 +192,10 @@ function letter_cutter.allow_metadata_inventory_put(
 	end
 end
 
+-- Implement on_metadata_inventory_put.
+-- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
+--
+-- Add craftable letters to the letter cutter inventory.
 function letter_cutter.on_metadata_inventory_put(
 		pos, listname, index, stack, player)
 	local count = stack:get_count()
@@ -183,6 +205,10 @@ function letter_cutter.on_metadata_inventory_put(
 	end
 end
 
+-- Implement on_metadata_inventory_take.
+-- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
+--
+-- Taking is allowed from all slots (even the internal microblock slot).
 function letter_cutter.on_metadata_inventory_take(
 		pos, listname, index, stack, player)
 	if listname == "output" then
@@ -195,6 +221,7 @@ function letter_cutter.on_metadata_inventory_take(
 	-- The recycle field plays no role here since it is processed immediately.
 end
 
+-- The name of the group of letters managed by this letter cutter.
 function letter_cutter.group_name(pos)
 	local node = minetest.get_node(pos)
 	if node.name == "letters:letter_cutter_digit" then
@@ -206,6 +233,7 @@ function letter_cutter.group_name(pos)
 	end
 end
 
+-- The group of letters managed by this letter cutter.
 function letter_cutter.group(pos)
 	local node = minetest.get_node(pos)
 	if node.name == "letters:letter_cutter_digit" then
@@ -217,6 +245,7 @@ function letter_cutter.group(pos)
 	end
 end
 
+-- Consume the input material and update inventories.
 function letter_cutter.remove_from_input(pos, origname, count)
 	local meta = minetest.get_meta(pos)
 
@@ -228,6 +257,7 @@ end
 
 local gui_slots = "listcolors[#606060AA;#808080;#101010;#202020;#FFF]"
 
+-- Update formspec.
 local function update_cutter_formspec(pos)
 	local meta = minetest.get_meta(pos)
 	meta:set_string("formspec", "size[11,9]" ..gui_slots..
@@ -241,6 +271,7 @@ local function update_cutter_formspec(pos)
 			"label[5.5,4.2;" .. minetest.formspec_escape(meta:get_string("message")) .. "]")
 end
 
+-- Create letter nodes from player-supplied text string.
 local function cut_from_text(pos, input_text, player)
 	local playername = player:get_player_name()
 
@@ -269,6 +300,7 @@ local function cut_from_text(pos, input_text, player)
 	throwawayinv:set_list("main", playerinv:get_list("main"))
 
 	for i = 1, #input_text do
+		-- Determine letter group.
 		local char = input_text:sub(i, i)
 		local group
 		if char:match("%d") then
@@ -314,6 +346,10 @@ local function cut_from_text(pos, input_text, player)
 	minetest.remove_detached_inventory("letter_cutter:throwaway")
 end
 
+-- Implement on_construct.
+-- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
+--
+-- Initialize a new letter cutter.
 function letter_cutter.on_construct(pos)
 	local meta = minetest.get_meta(pos)
 	local groupname = letter_cutter.group_name(pos)
@@ -333,8 +369,11 @@ function letter_cutter.on_construct(pos)
 	letter_cutter:reset(pos)
 end
 
-
-function letter_cutter.can_dig(pos,player)
+-- Implement can_dig.
+-- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
+--
+-- Allow digging if the letter cutter is empty.
+function letter_cutter.can_dig(pos, player)
 	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
 	if not inv:is_empty("input") then
@@ -343,6 +382,10 @@ function letter_cutter.can_dig(pos,player)
 	return true
 end
 
+-- Implement on_receive_fields.
+-- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
+--
+-- Handle formspec update.
 function letter_cutter.on_receive_fields(pos, formname, fields, sender)
 	if fields.itemlist then
 		local list = {}
@@ -365,20 +408,20 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	node_box = {
 		type = "fixed",
 		fixed = {
-			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125}, -- NodeBox1
-			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375}, -- NodeBox2
-			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375}, -- NodeBox3
-			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125}, -- NodeBox4
-			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5}, -- NodeBox5
-				{-0.125, 0.25, 0.125, 0.125, 0.3125, 0.1875}, -- NodeBox6
-			{0.125, 0.25, 0.0625, 0.1875, 0.3125, 0.125}, -- NodeBox7
-			{0.1875, 0.25, -0.1875, 0.25, 0.3125, 0.1875}, -- NodeBox8
-			{-0.1875, 0.25, 0.0625, -0.125, 0.3125, 0.125}, -- NodeBox9
-			{-0.25, 0.25, -0.1875, -0.1875, 0.3125, 0.0625}, -- NodeBox10
-			{-0.1875, 0.25, -0.25, -0.125, 0.3125, -0.1875}, -- NodeBox11
-			{-0.125, 0.25, -0.3125, 0.125, 0.3125, -0.25}, -- NodeBox12
-			{0.125, 0.25, -0.25, 0.375, 0.3125, -0.1875}, -- NodeBox13
-			{0.3125, 0.25, -0.1875, 0.375, 0.3125, -0.125}, -- NodeBox14
+			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125},
+			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375},
+			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375},
+			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125},
+			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5},
+			{-0.125, 0.25, 0.125, 0.125, 0.3125, 0.1875},
+			{0.125, 0.25, 0.0625, 0.1875, 0.3125, 0.125},
+			{0.1875, 0.25, -0.1875, 0.25, 0.3125, 0.1875},
+			{-0.1875, 0.25, 0.0625, -0.125, 0.3125, 0.125},
+			{-0.25, 0.25, -0.1875, -0.1875, 0.3125, 0.0625},
+			{-0.1875, 0.25, -0.25, -0.125, 0.3125, -0.1875},
+			{-0.125, 0.25, -0.3125, 0.125, 0.3125, -0.25},
+			{0.125, 0.25, -0.25, 0.375, 0.3125, -0.1875},
+			{0.3125, 0.25, -0.1875, 0.375, 0.3125, -0.125},
 		},
 	},
 	tiles = {"letters_letter_cutter_lower_top.png",
@@ -391,7 +434,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	sounds = default.node_sound_wood_defaults(),
 	on_construct = letter_cutter.on_construct,
 	can_dig = letter_cutter.can_dig,
-	-- Set the owner of this circular saw.
+	-- Set the cutter type and owner.
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
 		local owner = placer and placer:get_player_name() or ""
@@ -401,10 +444,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 					..meta:get_string("owner")..")")
 	end,
 	allow_metadata_inventory_move = letter_cutter.allow_metadata_inventory_move,
-	-- Only input- and recycle-slot are intended as input slots:
 	allow_metadata_inventory_put = letter_cutter.allow_metadata_inventory_put,
-	-- Taking is allowed from all slots (even the internal microblock slot). Moving is forbidden.
-	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
 	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put,
 	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take,
 	on_receive_fields = letter_cutter.on_receive_fields,
@@ -425,17 +465,17 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	node_box = {
 		type = "fixed",
 		fixed = {
-			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125}, -- NodeBox1
-			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375}, -- NodeBox2
-			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375}, -- NodeBox3
-			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125}, -- NodeBox4
-			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5}, -- NodeBox5
-			{0.1875, 0.25, -0.125, 0.125, 0.3125, -0.3125}, -- NodeBox6
-			{0.125, 0.25, 0.125, 0.0625, 0.3125, -0.125}, -- NodeBox7
-			{0.0625, 0.25, 0.3125, -0.0625, 0.3125, 0.0625}, -- NodeBox8
-			{-0.0625, 0.25, 0.125, -0.125, 0.3125, -0.125}, -- NodeBox9
-			{-0.125, 0.25, -0.125, -0.1875, 0.3125, -0.3125}, -- NodeBox10
-			{0.125, 0.25, -0.125, -0.125, 0.3125, -0.1875}, -- NodeBox11
+			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125},
+			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375},
+			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375},
+			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125},
+			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5},
+			{0.1875, 0.25, -0.125, 0.125, 0.3125, -0.3125},
+			{0.125, 0.25, 0.125, 0.0625, 0.3125, -0.125},
+			{0.0625, 0.25, 0.3125, -0.0625, 0.3125, 0.0625},
+			{-0.0625, 0.25, 0.125, -0.125, 0.3125, -0.125},
+			{-0.125, 0.25, -0.125, -0.1875, 0.3125, -0.3125},
+			{0.125, 0.25, -0.125, -0.125, 0.3125, -0.1875},
 		},
 	},
 	tiles = {"letters_letter_cutter_upper_top.png",
@@ -448,7 +488,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	sounds = default.node_sound_wood_defaults(),
 	on_construct = letter_cutter.on_construct,
 	can_dig = letter_cutter.can_dig,
-	-- Set the owner of this circular saw.
+	-- Set the cutter type and owner.
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
 		local owner = placer and placer:get_player_name() or ""
@@ -458,10 +498,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 					..meta:get_string("owner")..")")
 	end,
 	allow_metadata_inventory_move = letter_cutter.allow_metadata_inventory_move,
-	-- Only input- and recycle-slot are intended as input slots:
 	allow_metadata_inventory_put = letter_cutter.allow_metadata_inventory_put,
-	-- Taking is allowed from all slots (even the internal microblock slot). Moving is forbidden.
-	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
 	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put,
 	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take,
 	on_receive_fields = letter_cutter.on_receive_fields,
@@ -482,19 +519,19 @@ minetest.register_node("letters:letter_cutter_digit",  {
 	node_box = {
 		type = "fixed",
 		fixed = {
-			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125}, -- NodeBox1
-			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375}, -- NodeBox2
-			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375}, -- NodeBox3
-			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125}, -- NodeBox4
-			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5}, -- NodeBox5
-			{-0.0625, 0.25, 0.3125, 0, 0.3125, 0.1875}, -- NodeBox6
-			{0.125, 0.25, 0.3125, 0.1875, 0.3125, 0.1875}, -- NodeBox7
-			{-0.25, 0.25, 0.125, 0.25, 0.3125, 0.1875}, -- NodeBox8
-			{-0.125, 0.25, -0.0625, -0.0625, 0.3125, 0.125}, -- NodeBox9
-			{0.0625, 0.25, -0.0625, 0.125, 0.3125, 0.125}, -- NodeBox10
-			{-0.25, 0.25, -0.0625, 0.25, 0.3125, -0.125}, -- NodeBox11
-			{-0.1875, 0.25, -0.125, -0.125, 0.3125, -0.25}, -- NodeBox12
-			{0, 0.25, -0.125, 0.0625, 0.3125, -0.25}, -- NodeBox13
+			{-0.4375, -0.5, -0.4375, -0.3125, 0.125, -0.3125},
+			{-0.4375, -0.5, 0.3125, -0.3125, 0.125, 0.4375},
+			{0.3125, -0.5, 0.3125, 0.4375, 0.125, 0.4375},
+			{0.3125, -0.5, -0.4375, 0.4375, 0.125, -0.3125},
+			{-0.5, 0.0625, -0.5, 0.5, 0.25, 0.5},
+			{-0.0625, 0.25, 0.3125, 0, 0.3125, 0.1875},
+			{0.125, 0.25, 0.3125, 0.1875, 0.3125, 0.1875},
+			{-0.25, 0.25, 0.125, 0.25, 0.3125, 0.1875},
+			{-0.125, 0.25, -0.0625, -0.0625, 0.3125, 0.125},
+			{0.0625, 0.25, -0.0625, 0.125, 0.3125, 0.125},
+			{-0.25, 0.25, -0.0625, 0.25, 0.3125, -0.125},
+			{-0.1875, 0.25, -0.125, -0.125, 0.3125, -0.25},
+			{0, 0.25, -0.125, 0.0625, 0.3125, -0.25},
 		},
 	},
 	tiles = {"letters_letter_cutter_digit_top.png",
@@ -507,7 +544,7 @@ minetest.register_node("letters:letter_cutter_digit",  {
 	sounds = default.node_sound_wood_defaults(),
 	on_construct = letter_cutter.on_construct,
 	can_dig = letter_cutter.can_dig,
-	-- Set the owner of this circular saw.
+	-- Set the cutter type and owner.
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
 		local owner = placer and placer:get_player_name() or ""
@@ -517,10 +554,7 @@ minetest.register_node("letters:letter_cutter_digit",  {
 					..meta:get_string("owner")..")")
 	end,
 	allow_metadata_inventory_move = letter_cutter.allow_metadata_inventory_move,
-	-- Only input- and recycle-slot are intended as input slots:
 	allow_metadata_inventory_put = letter_cutter.allow_metadata_inventory_put,
-	-- Taking is allowed from all slots (even the internal microblock slot). Moving is forbidden.
-	-- Putting something in is slightly more complicated than taking anything because we have to make sure it is of a suitable material:
 	on_metadata_inventory_put = letter_cutter.on_metadata_inventory_put,
 	on_metadata_inventory_take = letter_cutter.on_metadata_inventory_take,
 	on_receive_fields = letter_cutter.on_receive_fields,
