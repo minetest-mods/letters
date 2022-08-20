@@ -83,14 +83,14 @@ end
 local cost = 0.110
 
 -- Collect items to display in letter cutter output inventory.
-function letter_cutter:get_output_inv(modname, subname, amount, max, group)
+function letter_cutter.get_output_inv(modname, subname, amount, max, group)
 	local list = {}
 	if amount < 1 then
 		return list
 	end
 
-	for i, t in ipairs(group) do
-		table.insert(list, modname .. ":" .. subname .. "_" .. t
+	for _, name in ipairs(group) do
+		table.insert(list, modname .. ":" .. subname .. "_" .. name
 			.. " " .. math.min(math.floor(amount/cost), max))
 	end
 	return list
@@ -105,7 +105,7 @@ function letter_cutter:reset(pos)
 	inv:set_list("output", {})
 	meta:set_int("anz", 0)
 
-	local groupname = letter_cutter.group_name(pos)
+	local groupname = self.group_name(pos)
 	meta:set_string("infotext",
 			"Letter Cutter ("..groupname..") is empty (owned by "..
 				meta:get_string("owner")..")")
@@ -118,7 +118,7 @@ function letter_cutter:update_inventory(pos, amount)
 
 	amount = meta:get_int("anz") + amount
 
-	local groupname = letter_cutter.group_name(pos)
+	local groupname = self.group_name(pos)
 	if amount < 1 then -- If the last block is taken out.
 		self:reset(pos)
 		return
@@ -139,10 +139,10 @@ function letter_cutter:update_inventory(pos, amount)
 		node_name.. " " .. math.floor(amount)
 	})
 
+	local max_offered = meta:get_int("max_offered")
+	local output = self.get_output_inv(modname, material, amount, max_offered, self.group(pos))
 	-- Display:
-	inv:set_list("output",
-		self:get_output_inv(modname, material, amount,
-				meta:get_int("max_offered"), letter_cutter.group(pos)))
+	inv:set_list("output", output)
 	-- Store how many microblocks are available:
 	meta:set_int("anz", amount)
 
@@ -155,8 +155,7 @@ end
 -- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
 --
 -- Moving is forbidden.
-function letter_cutter.allow_metadata_inventory_move(
-		pos, from_list, from_index, to_list, to_index, count, player)
+function letter_cutter.allow_metadata_inventory_move(_pos, _from_list, _from_index, _to_list, _to_index, _count, _player)
 	return 0
 end
 
@@ -165,8 +164,7 @@ end
 -- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
 --
 -- Only input- and recycle-slot are intended as input slots:
-function letter_cutter.allow_metadata_inventory_put(
-		pos, listname, index, stack, player)
+function letter_cutter.allow_metadata_inventory_put(pos, listname, index, stack, _player)
 	-- The player is not allowed to put something in there:
 	if listname == "output" then
 		return 0
@@ -183,7 +181,7 @@ function letter_cutter.allow_metadata_inventory_put(
 				inv:get_stack("input", index):get_name() ~= stackname then
 			return 0
 		end
-		for name, t in pairs(letter_cutter.known_nodes) do
+		for name, _ in pairs(letter_cutter.known_nodes) do
 			if name == stackname and inv:room_for_item("input", stack) then
 				return count
 			end
@@ -196,8 +194,7 @@ end
 -- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
 --
 -- Add craftable letters to the letter cutter inventory.
-function letter_cutter.on_metadata_inventory_put(
-		pos, listname, index, stack, player)
+function letter_cutter.on_metadata_inventory_put(pos, listname, _index, stack, _player)
 	local count = stack:get_count()
 
 	if listname == "input" then
@@ -209,8 +206,7 @@ end
 -- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
 --
 -- Taking is allowed from all slots (even the internal microblock slot).
-function letter_cutter.on_metadata_inventory_take(
-		pos, listname, index, stack, player)
+function letter_cutter.on_metadata_inventory_take(pos, listname, _index, stack, _player)
 	if listname == "output" then
 		-- We do know how much each block at each position costs:
 		letter_cutter:update_inventory(pos, 8 * -cost)
@@ -373,7 +369,7 @@ end
 -- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
 --
 -- Allow digging if the letter cutter is empty.
-function letter_cutter.can_dig(pos, player)
+function letter_cutter.can_dig(pos, _player)
 	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
 	if not inv:is_empty("input") then
@@ -386,10 +382,10 @@ end
 -- https://minetest.gitlab.io/minetest/definition-tables/#node-definition
 --
 -- Handle formspec update.
-function letter_cutter.on_receive_fields(pos, formname, fields, sender)
+function letter_cutter.on_receive_fields(pos, _formname, fields, sender)
 	if fields.itemlist then
 		local list = {}
-		for name, t in pairs(letter_cutter.known_nodes) do
+		for name, _ in pairs(letter_cutter.known_nodes) do
 			list[#list+1] = name
 		end
 		letter_cutter.show_item_list(sender, 'Cuttable materials', list, pos)
