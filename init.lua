@@ -24,35 +24,35 @@ end
 letter_cutter.show_item_list = dofile(
 	minetest.get_modpath(minetest.get_current_modname())..'/itemlist.lua')
 
-function letters.register_letters(modname, subname, from_node, description, tiles, def)
+function letters.register_letters(modname, subname, from_node, description, tiles, basedef)
 
-	def = def and table.copy(def) or {}
+	basedef = basedef and table.copy(basedef) or {}
 
 	--default node
-	def.drawtype = "signlike"
-	def.paramtype = "light"
-	def.paramtype2 = def.paramtype2 or "wallmounted"
-	def.sunlight_propagates = true
-	def.is_ground_content = false
-	def.walkable = false
-	def.selection_box = {
+	basedef.drawtype = "signlike"
+	basedef.paramtype = "light"
+	basedef.paramtype2 = basedef.paramtype2 or "wallmounted"
+	basedef.sunlight_propagates = true
+	basedef.is_ground_content = false
+	basedef.walkable = false
+	basedef.selection_box = {
 		type = "wallmounted"
 		--wall_top = <default>
 		--wall_bottom = <default>
 		--wall_side = <default>
 	}
-	def.groups = def.groups or {
+	basedef.groups = basedef.groups or {
 		not_in_creative_inventory = 1,
 		not_in_craft_guide = 1,
 		oddly_breakable_by_hand = 1,
 		attached_node = 1
 	}
-	def.legacy_wallmounted = false
+	basedef.legacy_wallmounted = false
 
 	for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
 		local char, group = tile:match("_([%d%u%l])(%l)_overlay")
 		if char and group then
-			def = table.copy(def)
+			local def = table.copy(basedef)
 
 			if group == "d" then
 				def.description = description.. " " ..char
