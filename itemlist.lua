@@ -198,9 +198,8 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	end
 end)
 
--- Only exposed function - Entry point
-
-local function show_item_list(player, title, item_list, pos_context)
+-- namespaced "show_item_list" for mod-internal use
+function letters.show_item_list(player, title, item_list, pos_context)
 	local context = get_context(player)
 	context.items = item_list_prepare(item_list)
 	context.title = title
@@ -209,4 +208,6 @@ local function show_item_list(player, title, item_list, pos_context)
 	show_item_list_formspec(player)
 end
 
-return show_item_list
+-- "exported" show_item_list function (see comment on top)
+-- preserved for backwards compatibility
+return letters.show_item_list

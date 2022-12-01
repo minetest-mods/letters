@@ -1,36 +1,38 @@
-local default_nodes = {
-	{"stone", "stone"},
-	{"cobble", "cobble",},
-	{"mossycobble", "mossycobble"},
-	{"brick", "brick"},
-	{"sandstone", "sandstone" },
-	{"steelblock", "steel_block"},
-	{"goldblock", "gold_block"},
-	{"copperblock", "copper_block"},
-	{"bronzeblock", "bronze_block"},
-	{"diamondblock", "diamond_block"},
-	{"desert_stone", "desert_stone"},
-	{"desert_cobble", "desert_cobble"},
-	{"tree", "tree"},
-	{"wood", "wood"},
-	{"jungletree", "jungletree"},
-	{"junglewood", "junglewood"},
-	{"obsidian", "obsidian"},
-	{"stonebrick", "stone_brick"},
-	{"desert_stonebrick", "desert_stone_brick"},
-	{"sandstonebrick", "sandstone_brick"},
-	{"obsidianbrick", "obsidian_brick"},
-	{"pine_tree", "pine_tree"},
-	{"pine_wood", "pine_wood"},
-}
 
-for _, row in pairs(default_nodes) do
-	local nodename = "default:" ..row[1]
-	local ndef = minetest.registered_nodes[nodename]
-	local texture = "default_" ..row[2].. ".png"
-	letters.register_letters("default", row[1], nodename, ndef.description, texture)
+if minetest.get_modpath("default") then
+	local default_nodes = {
+		{"stone", "stone"},
+		{"cobble", "cobble",},
+		{"mossycobble", "mossycobble"},
+		{"brick", "brick"},
+		{"sandstone", "sandstone" },
+		{"steelblock", "steel_block"},
+		{"goldblock", "gold_block"},
+		{"copperblock", "copper_block"},
+		{"bronzeblock", "bronze_block"},
+		{"diamondblock", "diamond_block"},
+		{"desert_stone", "desert_stone"},
+		{"desert_cobble", "desert_cobble"},
+		{"tree", "tree"},
+		{"wood", "wood"},
+		{"jungletree", "jungletree"},
+		{"junglewood", "junglewood"},
+		{"obsidian", "obsidian"},
+		{"stonebrick", "stone_brick"},
+		{"desert_stonebrick", "desert_stone_brick"},
+		{"sandstonebrick", "sandstone_brick"},
+		{"obsidianbrick", "obsidian_brick"},
+		{"pine_tree", "pine_tree"},
+		{"pine_wood", "pine_wood"},
+	}
+
+	for _, row in pairs(default_nodes) do
+		local nodename = "default:" ..row[1]
+		local ndef = minetest.registered_nodes[nodename]
+		local texture = "default_" ..row[2].. ".png"
+		letters.register_letters("default", row[1], nodename, ndef.description, texture)
+	end
 end
-
 
 if minetest.get_modpath("darkage") then
 	letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
