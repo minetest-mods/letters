@@ -11,3 +11,6 @@ if minetest.get_modpath("default") then
 end
 
 dofile(MP..'/registrations.lua')
+
+-- print to log after mod was loaded successfully
+print ("[MOD] Letters loaded")
