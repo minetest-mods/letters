@@ -2,7 +2,7 @@
 To open the item list dialog, add a do_file :
 
 local show_item_list = dofile(
-	minetest.get_modpath(minetest.get_current_modname())..'/itemlist.lua')
+	core.get_modpath(core.get_current_modname())..'/itemlist.lua')
 
 ...
 
@@ -24,7 +24,7 @@ local style={
 	cols = 3,       -- Number of columns of items displayed
 }
 
-local modname = minetest.get_current_modname()
+local modname = core.get_current_modname()
 
 local contexts = {}
 
@@ -32,13 +32,13 @@ local function get_player_name(player)
 	if type(player) == 'string' then
 		return player
 	end
-	if minetest.is_player(player) then
+	if core.is_player(player) then
 		return player:get_player_name()
 	end
-	minetest.log('warning',	'['..modname..'] get_player_name could not identify player.')
+	core.log('warning',	'['..modname..'] get_player_name could not identify player.')
 end
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local playername = get_player_name(player)
 	if playername then
 		contexts[playername] = nil
@@ -57,7 +57,7 @@ end
 
 -- Show node formspec functions
 local function show_node_formspec(playername, pos)
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 
 	-- Decontextualize formspec
 	local fs = meta:get_string('formspec')
@@ -73,13 +73,13 @@ local function show_node_formspec(playername, pos)
 		s, e = fs:find('%${.*}')
 		if s and e then
 			fs = fs:sub(1, s-1)..
-				minetest.formspec_escape(meta:get_string(fs:sub(s+2,e-1)))..
+				core.formspec_escape(meta:get_string(fs:sub(s+2,e-1)))..
 				fs:sub(e+1)
 		end
 	until s == nil
 
 	-- Find node on_receive_fields
-	local ndef = minetest.registered_nodes[minetest.get_node(pos).name]
+	local ndef = core.registered_nodes[core.get_node(pos).name]
 
 	local context = get_context(playername)
 	context.node_pos = pos
@@ -89,10 +89,10 @@ local function show_node_formspec(playername, pos)
 	end
 
 	-- Show formspec
-	minetest.show_formspec(playername, modname..':context_formspec', fs)
+	core.show_formspec(playername, modname..':context_formspec', fs)
 end
 
-minetest.register_on_player_receive_fields(function(player, formname, fields)
+core.register_on_player_receive_fields(function(player, formname, fields)
 	if formname == modname..':context_formspec' then
 		local context = get_context(player)
 		if context == nil then
@@ -114,7 +114,7 @@ end
 local function item_list_prepare(item_list)
 	local list = {}
 	for _, name in ipairs(item_list) do
-		local ndef = minetest.registered_items[name]
+		local ndef = core.registered_items[name]
 		if ndef then
 			list[#list+1] = ndef
 		end
@@ -167,11 +167,11 @@ local function show_item_list_formspec(player)
 			end
 		end
 	end
-	minetest.show_formspec(
+	core.show_formspec(
 		context.playername, modname..':item_list', table.concat(parts))
 end
 
-minetest.register_on_player_receive_fields(function(player, formname, fields)
+core.register_on_player_receive_fields(function(player, formname, fields)
 	if formname ~= modname..':item_list' then
 		return
 	end
@@ -192,7 +192,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	if fields.quit == 'true' then
 		if context.node_pos then
 			-- Using after to avoid the "double close" bug
-			minetest.after(0, show_node_formspec, get_player_name(player),
+			core.after(0, show_node_formspec, get_player_name(player),
 				context.node_pos)
 		end
 	end

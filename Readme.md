@@ -43,7 +43,7 @@ letters.register_letters("darkage",
 ```
 You will need to add letters as a dependency to your mod, or include the registrations is the code:
 ```lua
-if minetest.get_modpath("letters") then
+if core.get_modpath("letters") then
 	letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
 	--ect ect...
 end

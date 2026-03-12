@@ -1,5 +1,5 @@
-local lettersmod = minetest.get_current_modname()
-local letterspath = minetest.get_modpath(lettersmod)
+local lettersmod = core.get_current_modname()
+local letterspath = core.get_modpath(lettersmod)
 local letter_cutter = letters.letter_cutter
 
 letter_cutter.known_nodes = {}
@@ -8,7 +8,9 @@ letter_cutter.known_nodes = {}
 letter_cutter.names_upper = {}
 letter_cutter.names_lower = {}
 letter_cutter.names_digit = {}
-for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
+local files = core.get_dir_list(letterspath .. "/textures", false)
+table.sort(files)
+for _, tile in ipairs(files) do
 	local char, group = tile:match("_([%d%u%l])(%l)_overlay")
 	if char and group then
 		if group == "d" then
@@ -53,7 +55,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 	basedef.legacy_wallmounted = false
 
 	-- Register a new node for each letter using the provided from_node as the material.
-	for _, tile in ipairs(minetest.get_dir_list(letterspath .. "/textures", false)) do
+	for _, tile in ipairs(files) do
 		local char, group = tile:match("_([%d%u%l])(%l)_overlay")
 		if char and group then
 			local def = table.copy(basedef)
@@ -69,7 +71,7 @@ function letters.register_letters(modname, subname, from_node, description, tile
 			def.wield_image = def.inventory_image
 			def.tiles = {def.inventory_image}
 
-			minetest.register_node(":" ..modname..":"..subname.. "_letter_" ..char..group,def)
+			core.register_node(":" ..modname..":"..subname.. "_letter_" ..char..group,def)
 		end
 	end
 	letter_cutter.known_nodes[from_node] = {modname, subname}

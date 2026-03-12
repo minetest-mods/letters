@@ -1,5 +1,5 @@
 
-if minetest.get_modpath("default") then
+if core.get_modpath("default") then
 	local default_nodes = {
 		{"stone", "stone"},
 		{"cobble", "cobble",},
@@ -28,13 +28,13 @@ if minetest.get_modpath("default") then
 
 	for _, row in pairs(default_nodes) do
 		local nodename = "default:" ..row[1]
-		local ndef = minetest.registered_nodes[nodename]
+		local ndef = core.registered_nodes[nodename]
 		local texture = "default_" ..row[2].. ".png"
 		letters.register_letters("default", row[1], nodename, ndef.description, texture)
 	end
 end
 
-if minetest.get_modpath("darkage") then
+if core.get_modpath("darkage") then
 	letters.register_letters("darkage", "marble", "darkage:marble", "Marble", "darkage_marble.png")
 	letters.register_letters("darkage", "basalt", "darkage:basalt", "Basalt", "darkage_basalt.png")
 	letters.register_letters("darkage", "serpentine", "darkage:serpentine", "Serpentine", "darkage_serpentine.png")
@@ -54,7 +54,7 @@ if minetest.get_modpath("darkage") then
 	letters.register_letters("darkage", "slate_tile", "darkage:slate_tile", "Slate Tile", "darkage_slate_tile.png")
 end
 
-if minetest.get_modpath("colouredstonebricks") then
+if core.get_modpath("colouredstonebricks") then
 	letters.register_letters("colouredstonebricks", "black", "colouredstonebricks:black", "Black", "colouredstonebricks_black.png")
 	letters.register_letters("colouredstonebricks", "cyan", "colouredstonebricks:cyan", "Cyan", "colouredstonebricks_cyan.png")
 	letters.register_letters("colouredstonebricks", "brown", "colouredstonebricks:brown", "Brown", "colouredstonebricks_brown.png")

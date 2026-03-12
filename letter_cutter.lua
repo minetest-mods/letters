@@ -17,7 +17,7 @@ end
 
 -- Reset letter cutter to its empty state.
 function letter_cutter:reset(pos)
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 	local inv  = meta:get_inventory()
 
 	inv:set_list("input",  {})
@@ -32,7 +32,7 @@ end
 
 -- Update letter cutter inventories with available material count.
 function letter_cutter:update_inventory(pos, amount)
-	local meta          = minetest.get_meta(pos)
+	local meta          = core.get_meta(pos)
 	local inv           = meta:get_inventory()
 
 	amount = meta:get_int("anz") + amount
@@ -89,7 +89,7 @@ function letter_cutter.allow_metadata_inventory_put(pos, listname, index, stack,
 		return 0
 	end
 
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 	local inv  = meta:get_inventory()
 	local stackname = stack:get_name()
 	local count = stack:get_count()
@@ -138,7 +138,7 @@ end
 
 -- The name of the group of letters managed by this letter cutter.
 function letter_cutter.group_name(pos)
-	local node = minetest.get_node(pos)
+	local node = core.get_node(pos)
 	if node.name == "letters:letter_cutter_digit" then
 		return "Digit"
 	elseif node.name == "letters:letter_cutter_upper" then
@@ -150,7 +150,7 @@ end
 
 -- The group of letters managed by this letter cutter.
 function letter_cutter.group(pos)
-	local node = minetest.get_node(pos)
+	local node = core.get_node(pos)
 	if node.name == "letters:letter_cutter_digit" then
 		return letter_cutter.names_digit
 	elseif node.name == "letters:letter_cutter_upper" then
@@ -162,7 +162,7 @@ end
 
 -- Consume the input material and update inventories.
 function letter_cutter.remove_from_input(pos, origname, count)
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 
 	local cutterinv = meta:get_inventory()
 
@@ -174,7 +174,7 @@ local gui_slots = "listcolors[#606060AA;#808080;#101010;#202020;#FFF]"
 
 -- Update formspec.
 local function update_cutter_formspec(pos)
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 	meta:set_string("formspec", "size[11,9]" ..gui_slots..
 			"label[0,0;Input\nmaterial]" ..
 			"list[current_name;input;1.5,0;1,1;]" ..
@@ -183,14 +183,14 @@ local function update_cutter_formspec(pos)
 			"list[current_player;main;1.5,5;8,4;]" ..
 			"field[0.5,4.3;3,1;text;Enter text;${text}]" ..
 			"button[3.5,4;2,1;make_text;Make text]" ..
-			"label[5.5,4.2;" .. minetest.formspec_escape(meta:get_string("message")) .. "]")
+			"label[5.5,4.2;" .. core.formspec_escape(meta:get_string("message")) .. "]")
 end
 
 -- Create letter nodes from player-supplied text string.
 local function cut_from_text(pos, input_text, player)
 	local playername = player:get_player_name()
 
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 
 	local cutterinv = meta:get_inventory()
 	local cutterinput = cutterinv:get_list("input")
@@ -209,7 +209,7 @@ local function cut_from_text(pos, input_text, player)
 	meta:set_string("text", input_text)
 
 	local totalcost = 0
-	local throwawayinv = minetest.create_detached_inventory("letter_cutter:throwaway", {}, playername)
+	local throwawayinv = core.create_detached_inventory("letter_cutter:throwaway", {}, playername)
 
 	throwawayinv:set_size("main", playerinv:get_size("main"))
 	throwawayinv:set_list("main", playerinv:get_list("main"))
@@ -234,7 +234,7 @@ local function cut_from_text(pos, input_text, player)
 			meta:set_string("message", "Not enough materials.")
 			update_cutter_formspec(pos)
 
-			minetest.remove_detached_inventory("letter_cutter:throwaway")
+			core.remove_detached_inventory("letter_cutter:throwaway")
 			return
 		end
 
@@ -242,7 +242,7 @@ local function cut_from_text(pos, input_text, player)
 			meta:set_string("message", "Not enough room.")
 			update_cutter_formspec(pos)
 
-			minetest.remove_detached_inventory("letter_cutter:throwaway")
+			core.remove_detached_inventory("letter_cutter:throwaway")
 			return
 		end
 
@@ -258,7 +258,7 @@ local function cut_from_text(pos, input_text, player)
 	letter_cutter.remove_from_input(pos, origname, tostring(math.ceil(totalcost)))
 	playerinv:set_list("main", throwawayinv:get_list("main"))
 
-	minetest.remove_detached_inventory("letter_cutter:throwaway")
+	core.remove_detached_inventory("letter_cutter:throwaway")
 end
 
 -- Implement on_construct.
@@ -266,7 +266,7 @@ end
 --
 -- Initialize a new letter cutter.
 function letter_cutter.on_construct(pos)
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 	local groupname = letter_cutter.group_name(pos)
 	update_cutter_formspec(pos)
 
@@ -289,7 +289,7 @@ end
 --
 -- Allow digging if the letter cutter is empty.
 function letter_cutter.can_dig(pos, _player)
-	local meta = minetest.get_meta(pos)
+	local meta = core.get_meta(pos)
 	local inv = meta:get_inventory()
 	if not inv:is_empty("input") then
 		return false
@@ -317,8 +317,8 @@ function letter_cutter.on_receive_fields(pos, _formname, fields, sender)
 	end
 end
 
-minetest.register_node("letters:letter_cutter_lower",  {
-	description = "Lower Case Leter Cutter",
+core.register_node("letters:letter_cutter_lower",  {
+	description = "Lower Case Letter Cutter",
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -352,7 +352,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	can_dig = letter_cutter.can_dig,
 	-- Set the cutter type and owner.
 	after_place_node = function(pos, placer)
-		local meta = minetest.get_meta(pos)
+		local meta = core.get_meta(pos)
 		local owner = placer and placer:get_player_name() or ""
 		meta:set_string("owner",  owner)
 		meta:set_string("infotext",
@@ -366,7 +366,7 @@ minetest.register_node("letters:letter_cutter_lower",  {
 	on_receive_fields = letter_cutter.on_receive_fields,
 })
 
-minetest.register_craft({
+core.register_craft({
 	output = "letters:letter_cutter_lower",
 	recipe = {
 		{"default:tree", "default:tree", "default:tree"},
@@ -375,8 +375,8 @@ minetest.register_craft({
 	},
 })
 
-minetest.register_node("letters:letter_cutter_upper",  {
-	description = "Upper Case Leter Cutter",
+core.register_node("letters:letter_cutter_upper",  {
+	description = "Upper Case Letter Cutter",
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -407,7 +407,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	can_dig = letter_cutter.can_dig,
 	-- Set the cutter type and owner.
 	after_place_node = function(pos, placer)
-		local meta = minetest.get_meta(pos)
+		local meta = core.get_meta(pos)
 		local owner = placer and placer:get_player_name() or ""
 		meta:set_string("owner",  owner)
 		meta:set_string("infotext",
@@ -421,7 +421,7 @@ minetest.register_node("letters:letter_cutter_upper",  {
 	on_receive_fields = letter_cutter.on_receive_fields,
 })
 
-minetest.register_craft({
+core.register_craft({
 	output = "letters:letter_cutter_upper",
 	recipe = {
 		{"default:tree", "default:tree", "default:tree"},
@@ -430,7 +430,7 @@ minetest.register_craft({
 	},
 })
 
-minetest.register_node("letters:letter_cutter_digit",  {
+core.register_node("letters:letter_cutter_digit",  {
 	description = "Digit Cutter",
 	drawtype = "nodebox",
 	node_box = {
@@ -464,7 +464,7 @@ minetest.register_node("letters:letter_cutter_digit",  {
 	can_dig = letter_cutter.can_dig,
 	-- Set the cutter type and owner.
 	after_place_node = function(pos, placer)
-		local meta = minetest.get_meta(pos)
+		local meta = core.get_meta(pos)
 		local owner = placer and placer:get_player_name() or ""
 		meta:set_string("owner",  owner)
 		meta:set_string("infotext",
@@ -478,7 +478,7 @@ minetest.register_node("letters:letter_cutter_digit",  {
 	on_receive_fields = letter_cutter.on_receive_fields,
 })
 
-minetest.register_craft({
+core.register_craft({
 	output = "letters:letter_cutter_digit",
 	recipe = {
 		{"default:tree", "default:tree", "default:tree"},
